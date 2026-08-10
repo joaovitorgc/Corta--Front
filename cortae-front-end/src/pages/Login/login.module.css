@@ -1,0 +1,172 @@
+.container {
+    display: flex;
+    width: 100%;
+    min-height: calc(100vh - 160px);
+    background-color: #171717;
+}
+
+.imageSection {
+    flex: 0 0 35%;
+    background-image:
+            linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.1)),
+            url("public/imagem_login.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+.formSection {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.loginCard {
+    background-color: #ffffff;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 520px;
+    padding: 48px 40px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.title {
+    font-size: 1.8rem;
+    font-weight: 900;
+    font-style: italic;
+    color: #000000;
+    text-align: center;
+    margin-bottom: 32px;
+    letter-spacing: -0.5px;
+}
+
+.form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #111111;
+    margin-bottom: 4px;
+}
+
+.input {
+    width: 100%;
+    border: none;
+    border-bottom: 1.5px solid #111111;
+    padding: 8px 0;
+    font-size: 1rem;
+    outline: none;
+    background: transparent;
+    transition: border-color 0.2s ease;
+}
+
+.input:focus {
+    border-bottom-color: #666666;
+}
+
+.forgotPasswordWrapper {
+    margin-top: -8px;
+    margin-bottom: 28px;
+}
+
+.forgotPasswordLink {
+    font-size: 0.85rem;
+    color: #4f46e5;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.forgotPasswordLink:hover {
+    color: #3730a3;
+    opacity: 0.9;
+}
+
+.btnEntrar {
+    width: 220px;
+    margin: 0 auto;
+    padding: 10px;
+    background-color: #ffffff;
+    color: #000000;
+    border: 1.5px solid #000000;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.btnEntrar:hover {
+    background-color: #000000;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.signupContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 24px;
+    width: 100%;
+}
+
+.signupText {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #000000;
+    margin-bottom: 12px;
+}
+
+.btnCadastreSe {
+    width: 220px;
+    padding: 12px;
+    background-color: #000000;
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.btnCadastreSe:hover {
+    background-color: #222222;
+    transform: translateY(-2px);
+}
+
+
+@media (max-width: 850px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .imageSection {
+        display: none;
+    }
+
+    .formSection {
+        padding: 40px 16px;
+    }
+
+    .loginCard {
+        padding: 32px 24px;
+    }
+}
