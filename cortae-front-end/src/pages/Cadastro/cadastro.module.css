@@ -1,0 +1,191 @@
+.container {
+    width: 100%;
+    min-height: calc(100vh - 160px);
+    display: flex;
+    background-color: #121212;
+}
+
+
+.areaFormulario {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 40px;
+    background-color: #121212;
+}
+
+
+.cartaoCadastro {
+    width: 100%;
+    max-width: 480px;
+    background-color: #ffffff;
+    border-radius: 15px;
+    padding: 30px 38px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.titulo {
+    margin: 0 0 22px;
+    color: #000000;
+    font-size: 1.5rem;
+    font-weight: 900;
+    font-style: italic;
+    text-align: center;
+}
+
+
+
+.formulario {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.grupoEntrada {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 14px;
+}
+
+.rotulo {
+    color: #111111;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.entrada {
+    width: 100%;
+    padding: 8px 0;
+    border: none;
+    border-bottom: 1px solid #999999;
+    background-color: transparent;
+    color: #111111;
+    font-size: 0.85rem;
+    outline: none;
+    box-sizing: border-box;
+}
+
+
+.entrada:focus {
+    border-bottom-color: #000000;
+}
+
+.botaoCadastrar {
+    width: 175px;
+    margin: 16px auto 0;
+    padding: 7px 10px;
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #777777;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.botaoCadastrar:hover {
+    background-color: #000000;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.areaLogin {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 14px;
+}
+
+.textoLogin {
+    margin: 0 0 7px;
+    color: #000000;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.botaoLogin {
+    width: 175px;
+    padding: 7px 10px;
+    background-color: #000000;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+
+.botaoLogin:hover {
+    background-color: #292929;
+    transform: translateY(-1.5px);
+}
+
+.areaImagem {
+    flex: 0 0 35%;
+    min-height: 100%;
+    position: relative;
+    background-image: url('/public/cadastro.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+
+.sobreposicaoImagem {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+            to right,
+            rgba(0, 0, 0, 0.35),
+            rgba(0, 0, 0, 0)
+    );
+    pointer-events: none;
+}
+
+@media (max-width: 850px) {
+
+    .container {
+        min-height: calc(100vh - 160px);
+    }
+
+    .areaImagem {
+        display: none;
+    }
+
+    .areaFormulario {
+        padding: 30px 20px;
+    }
+
+    .cartaoCadastro {
+        max-width: 420px;
+    }
+}
+
+
+@media (max-width: 480px) {
+
+    .areaFormulario {
+        padding: 25px 15px;
+    }
+
+    .cartaoCadastro {
+        padding: 25px 20px;
+        border-radius: 12px;
+    }
+
+    .titulo {
+        font-size: 1.15rem;
+    }
+}
