@@ -5,7 +5,6 @@
     background-color: #121212;
 }
 
-
 .areaFormulario {
     flex: 1;
     display: flex;
@@ -14,7 +13,6 @@
     padding: 50px 40px;
     background-color: #121212;
 }
-
 
 .cartaoCadastro {
     width: 100%;
@@ -29,15 +27,13 @@
 }
 
 .titulo {
-    margin: 0 0 22px;
+    margin: 0 0 28px;
     color: #000000;
-    font-size: 1.5rem;
+    font-size: 1.7rem;
     font-weight: 900;
     font-style: italic;
     text-align: center;
 }
-
-
 
 .formulario {
     width: 100%;
@@ -45,47 +41,45 @@
     flex-direction: column;
 }
 
-
 .grupoEntrada {
     width: 100%;
     display: flex;
     flex-direction: column;
-    margin-bottom: 14px;
+    margin-bottom: 18px;
 }
 
 .rotulo {
     color: #111111;
-    font-size: 0.7rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .entrada {
     width: 100%;
-    padding: 8px 0;
+    padding: 10px 0;
     border: none;
-    border-bottom: 1px solid #999999;
+    border-bottom: 1.5px solid #999999;
     background-color: transparent;
     color: #111111;
-    font-size: 0.85rem;
+    font-size: 1rem;
     outline: none;
     box-sizing: border-box;
 }
-
 
 .entrada:focus {
     border-bottom-color: #000000;
 }
 
 .botaoCadastrar {
-    width: 175px;
-    margin: 16px auto 0;
-    padding: 7px 10px;
+    width: 200px;
+    margin: 18px auto 0;
+    padding: 10px 12px;
     background-color: #ffffff;
     color: #000000;
     border: 1px solid #777777;
-    border-radius: 5px;
-    font-size: 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
     font-weight: 800;
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.2s ease;
@@ -102,30 +96,29 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 14px;
+    margin-top: 20px;
 }
 
 .textoLogin {
-    margin: 0 0 7px;
+    margin: 0 0 9px;
     color: #000000;
-    font-size: 0.7rem;
+    font-size: 0.85rem;
     font-weight: 700;
     text-align: center;
 }
 
 .botaoLogin {
-    width: 175px;
-    padding: 7px 10px;
+    width: 200px;
+    padding: 10px 12px;
     background-color: #000000;
     color: #ffffff;
     border: none;
-    border-radius: 4px;
-    font-size: 0.75rem;
+    border-radius: 5px;
+    font-size: 0.85rem;
     font-weight: 800;
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
-
 
 .botaoLogin:hover {
     background-color: #292929;
@@ -142,7 +135,6 @@
     background-repeat: no-repeat;
 }
 
-
 .sobreposicaoImagem {
     position: absolute;
     inset: 0;
@@ -155,7 +147,6 @@
 }
 
 @media (max-width: 850px) {
-
     .container {
         min-height: calc(100vh - 160px);
     }
@@ -173,9 +164,7 @@
     }
 }
 
-
 @media (max-width: 480px) {
-
     .areaFormulario {
         padding: 25px 15px;
     }
@@ -186,6 +175,6 @@
     }
 
     .titulo {
-        font-size: 1.15rem;
+        font-size: 1.3rem;
     }
 }

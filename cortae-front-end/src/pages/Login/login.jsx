@@ -1,5 +1,6 @@
 import styles from './Login.module.css';
 import {useState} from "react";
+import {Link} from "react-router-dom";
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -44,9 +45,9 @@ export default function Login() {
                         </div>
 
                         <div className={styles.forgotPasswordWrapper}>
-                            <a href="#redefinir" className={styles.forgotPasswordLink}>
+                            <Link to="/redefinirsenha" className={styles.forgotPasswordLink}>
                                 Esqueci minha Senha? Redefinir
-                            </a>
+                            </Link>
                         </div>
 
                         <button type="submit" className={styles.btnEntrar}>
