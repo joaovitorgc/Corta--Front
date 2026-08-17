@@ -1,5 +1,4 @@
 import React from 'react';
-// Importação dos ícones do React (Lucide Icons)
 import { LuClock, LuScissors, LuSparkles } from 'react-icons/lu';
 import styles from './Home.module.css';
 

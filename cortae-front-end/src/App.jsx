@@ -5,6 +5,8 @@ import Home from "./pages/Home/Home.jsx";
 import Login from "./pages/Login/login.jsx";
 import Cadastro from "./pages/Cadastro/cadastro.jsx";
 import RedefinicaoSenha from "./pages/RedefinacaoSenha/RedefinacaoSenha.jsx";
+import BarbeariasDisponiveis from "./pages/BarbeariasDisponiveis/BarbeariasDisponiveis.jsx";
+import EditarUsuario from "./pages/EditarUsuario/EditarUsuario.jsx";
 
 function App() {
     return (
@@ -16,6 +18,8 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/cadastro" element={<Cadastro />} />
                 <Route path="/redefinirsenha" element={<RedefinicaoSenha />} />
+                <Route path="/BarbeariasDisponiveis" element={<BarbeariasDisponiveis />} />
+                <Route path="/editarusuario" element={<EditarUsuario />} />
             </Routes>
 
             <Footer />
