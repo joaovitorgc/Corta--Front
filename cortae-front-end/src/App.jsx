@@ -12,6 +12,7 @@ import Estabelecimento from "./pages/Estabelecimento/Estabelecimento.jsx";
 function App() {
     return (
         <>
+
             <Header />
 
             <Routes>
