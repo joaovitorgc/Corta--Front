@@ -1,0 +1,306 @@
+.container {
+    width: 100%;
+    min-height: calc(100vh - 160px);
+    background-color: var(--cor-fundo-b);
+    color: var(--cor-texto-2);
+    display: flex;
+    justify-content: center;
+}
+
+.conteudo {
+    width: 950px;
+    padding: 25px 30px 55px;
+}
+
+.apresentacao {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 38px;
+}
+
+.informacoes {
+    width: 390px;
+}
+
+.selo {
+    display: inline-block;
+    padding: 4px 8px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    background-color: var(--cor-destaque);
+    color: var(--cor-texto);
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: .4px;
+}
+
+.informacoes h1 {
+    margin-bottom: 10px;
+    color: var(--cor-destaque);
+    font-size: 32px;
+    font-weight: 800;
+}
+
+.informacoes p {
+    width: 340px;
+    margin-bottom: 15px;
+    color: var(--cor-texto-categorizante);
+    font-size: 9px;
+    line-height: 1.5;
+}
+
+.botaoAgendar {
+    width: 120px;
+    height: 29px;
+    border-radius: 6px;
+    background-color: var(--cor-destaque);
+    color: var(--cor-texto);
+    font-size: 8px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.botaoAgendar:hover {
+    background-color: var(--cor-hover-branco);
+    transform: translateY(-2px);
+}
+
+.imagemContainer {
+    width: 420px;
+    height: 175px;
+    overflow: hidden;
+    border-radius: 14px;
+}
+
+.imagemContainer img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.areaPrincipal {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 55px;
+}
+
+.servicos {
+    width: 500px;
+}
+
+.tituloSecao {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 20px;
+}
+
+.tituloSecao span {
+    width: 4px;
+    height: 12px;
+    border-radius: 2px;
+    background-color: var(--cor-destaque);
+}
+
+.tituloSecao h2 {
+    color: var(--cor-texto-2);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.abas {
+    width: 110px;
+    height: 20px;
+    display: flex;
+    margin-left: 2px;
+    margin-bottom: 22px;
+    border-radius: 5px;
+    overflow: hidden;
+    background-color: var(--cor-card-b);
+}
+
+.abas button {
+    width: 55px;
+    border: none;
+    background-color: var(--cor-card-b);
+    color: var(--cor-texto-categorizante);
+    font-size: 6px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.abas .abaAtiva {
+    background-color: var(--cor-destaque);
+    color: var(--cor-texto);
+}
+
+.listaServicos {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.listaProfissionais {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.profissional {
+    width: 100%;
+    height: 48px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 6px;
+    background-color: var(--cor-card);
+    color: var(--cor-texto);
+}
+
+.iconeProfissional {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background-color: var(--cor-card-b);
+    color: var(--cor-texto-2);
+}
+
+.iconeProfissional svg {
+    width: 15px;
+    height: 15px;
+}
+
+.profissional h3 {
+    font-size: 9px;
+}
+
+.profissional span {
+    color: var(--cor-texto-categorizante);
+    font-size: 7px;
+}
+
+.lateral {
+    width: 310px;
+}
+
+.cardInformacoes {
+    width: 100%;
+    padding: 15px;
+    border-radius: 13px;
+    background-color: var(--cor-card);
+    color: var(--cor-texto);
+}
+
+.bloco {
+    margin-bottom: 16px;
+}
+
+.bloco:last-child {
+    margin-bottom: 0;
+}
+
+.tituloCard {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 7px;
+    color: var(--cor-destaque);
+}
+
+.tituloCard svg {
+    width: 10px;
+    height: 10px;
+}
+
+.tituloCard span {
+    font-size: 6px;
+    font-weight: 800;
+    letter-spacing: .5px;
+}
+
+.bloco > p {
+    margin-left: 16px;
+    color: var(--cor-texto-categorizante);
+    font-size: 6px;
+    line-height: 1.6;
+}
+
+.horarios {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-left: 16px;
+}
+
+.horarios p {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    color: var(--cor-texto-categorizante);
+    font-size: 6px;
+}
+
+.horarios strong {
+    color: var(--cor-texto);
+    font-size: 6px;
+    font-weight: 600;
+}
+
+.horarios .fechado {
+    color: var(--cor-destaque);
+}
+
+.telefone {
+    width: 100%;
+    height: 32px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 6px;
+    background-color: var(--cor-card-3);
+    color: var(--cor-texto);
+}
+
+.telefone svg {
+    width: 12px;
+    height: 12px;
+}
+
+.telefone span {
+    font-size: 7px;
+}
+
+.botaoAgendarGrande {
+    width: 100%;
+    height: 40px;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 8px;
+    background-color: var(--cor-destaque);
+    color: var(--cor-texto);
+    font-size: 8px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.botaoAgendarGrande svg {
+    width: 12px;
+    height: 12px;
+}
+
+.botaoAgendarGrande:hover {
+    background-color: var(--cor-hover-branco);
+    transform: translateY(-2px);
+}

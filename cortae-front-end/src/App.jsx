@@ -7,6 +7,7 @@ import Cadastro from "./pages/Cadastro/cadastro.jsx";
 import RedefinicaoSenha from "./pages/RedefinacaoSenha/RedefinacaoSenha.jsx";
 import BarbeariasDisponiveis from "./pages/BarbeariasDisponiveis/BarbeariasDisponiveis.jsx";
 import EditarUsuario from "./pages/EditarUsuario/EditarUsuario.jsx";
+import Estabelecimento from "./pages/Estabelecimento/Estabelecimento.jsx";
 
 function App() {
     return (
@@ -20,6 +21,7 @@ function App() {
                 <Route path="/redefinirsenha" element={<RedefinicaoSenha />} />
                 <Route path="/BarbeariasDisponiveis" element={<BarbeariasDisponiveis />} />
                 <Route path="/editarusuario" element={<EditarUsuario />} />
+                <Route path="/estabelecimento" element={<Estabelecimento />} />
             </Routes>
 
             <Footer />
