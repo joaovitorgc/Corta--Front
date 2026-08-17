@@ -135,7 +135,7 @@
 }
 
 .btnCadastreSe {
-    width: 220px;
+    width: 200px;
     padding: 12px;
     background-color: #000000;
     color: #ffffff;
@@ -145,6 +145,8 @@
     font-weight: 800;
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.2s ease;
+    text-decoration: none;
+    text-align: center;
 }
 
 .btnCadastreSe:hover {

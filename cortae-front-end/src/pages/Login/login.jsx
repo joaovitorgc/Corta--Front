@@ -57,9 +57,9 @@ export default function Login() {
 
                     <div className={styles.signupContainer}>
                         <p className={styles.signupText}>Ainda não possui Cadastro?</p>
-                        <button type="button" className={styles.btnCadastreSe}>
+                        <Link to="/cadastro"  className={styles.btnCadastreSe}>
                             CADASTRE-SE
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>
