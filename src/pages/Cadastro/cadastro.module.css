@@ -1,0 +1,627 @@
+.container {
+    width: 100%;
+    min-height: calc(100vh - 160px);
+    display: flex;
+    background-color: var(--cor-fundo-b);
+}
+
+.areaFormulario {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 40px;
+    background-color: var(--cor-fundo-b);
+}
+
+.cartaoCadastro {
+    width: 100%;
+    max-width: 480px;
+    background-color: var(--cor-card-3);
+    border-radius: 15px;
+    padding: 30px 38px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.titulo {
+    margin: 0 0 28px;
+    color: var(--cor-texto);
+    font-size: 1.7rem;
+    font-weight: 900;
+    font-style: italic;
+    text-align: center;
+}
+
+.formulario {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.grupoEntrada {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 18px;
+}
+
+.rotulo {
+    color: var(--cor-texto);
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.entrada {
+    width: 100%;
+    padding: 10px 0;
+    border: none;
+    border-bottom: 1.5px solid var(--cor-texto-categorizante);
+    background-color: transparent;
+    color: var(--cor-texto);
+    font-size: 1rem;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.entrada:focus {
+    border-bottom-color: var(--cor-confirmar);
+}
+
+.botaoCadastrar {
+    width: 200px;
+    margin: 18px auto 0;
+    padding: 10px 12px;
+    background-color: var(--cor-botao-2);
+    color: var(--cor-texto);
+    border: 1px solid var(--cor-texto-categorizante);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+
+    transition:
+            background-color 0.2s ease,
+            transform 0.2s ease;
+}
+
+.botaoCadastrar:hover {
+    background-color: var(--cor-confirmar);
+    color: var(--cor-texto-2);
+    transform: translateY(-2px);
+}
+
+.botaoCadastrar:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.areaLogin {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.textoLogin {
+    margin: 0 0 9px;
+    color: var(--cor-texto);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.botaoLogin {
+    width: 200px;
+    padding: 10px 12px;
+    background-color: var(--cor-confirmar);
+    color: var(--cor-texto-2);
+    border: none;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+
+    transition:
+            background-color 0.2s ease,
+            transform 0.2s ease;
+}
+
+.botaoLogin:hover {
+    transform: translateY(-2px);
+    opacity: 0.7;
+}
+
+
+/* ==========================================
+   IMAGEM
+========================================== */
+
+.areaImagem {
+    flex: 0 0 35%;
+    min-height: 100%;
+    position: relative;
+
+    background-image: url('/public/cadastro.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.sobreposicaoImagem {
+    position: absolute;
+    inset: 0;
+
+    background: linear-gradient(
+            to right,
+            rgba(0, 0, 0, 0.35),
+            rgba(0, 0, 0, 0)
+    );
+
+    pointer-events: none;
+}
+
+
+/* ==========================================
+   MODAL DE ATIVAÇÃO
+========================================== */
+
+.fundoModal {
+    position: fixed;
+
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    box-sizing: border-box;
+
+    background-color: rgba(0, 0, 0, 0.75);
+
+    /*
+        Faz o modal ficar na frente
+        de absolutamente todo o conteúdo.
+    */
+    z-index: 999999;
+
+    animation: aparecerFundo 0.25s ease;
+}
+
+
+.modalAtivacao {
+    position: relative;
+
+    width: 100%;
+    max-width: 450px;
+
+    padding: 45px 40px;
+
+    box-sizing: border-box;
+
+    background-color: #ffffff;
+
+    border-radius: 18px;
+
+    text-align: center;
+
+    box-shadow:
+            0 25px 70px rgba(0, 0, 0, 0.45);
+
+    animation: aparecerModal 0.3s ease;
+
+    /*
+        Garante que o conteúdo do modal
+        fique acima do fundo.
+    */
+    z-index: 1000000;
+}
+
+
+/* ==========================================
+   BOTÃO FECHAR
+========================================== */
+
+.fecharModal {
+    position: absolute;
+
+    top: 12px;
+    right: 15px;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+
+    background: transparent;
+
+    color: #555555;
+
+    font-size: 30px;
+    font-weight: 400;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    border-radius: 50%;
+
+    transition:
+            background-color 0.2s ease,
+            transform 0.2s ease;
+}
+
+.fecharModal:hover {
+    background-color: #f1f1f1;
+
+    transform: rotate(90deg);
+}
+
+
+/* ==========================================
+   ÍCONE DO E-MAIL
+========================================== */
+
+.iconeEmail {
+    width: 75px;
+    height: 75px;
+
+    margin: 0 auto 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background-color: #121212;
+
+    color: #ffffff;
+
+    font-size: 32px;
+
+    box-shadow:
+            0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+
+/* ==========================================
+   TEXTOS
+========================================== */
+
+.tituloModal {
+    margin: 0 0 15px;
+
+    color: #121212;
+
+    font-size: 25px;
+    font-weight: 800;
+
+    text-align: center;
+}
+
+.textoModal {
+    margin: 5px 0;
+
+    color: #666666;
+
+    font-size: 15px;
+
+    line-height: 1.5;
+}
+
+.emailModal {
+    display: block;
+
+    margin: 10px 0 20px;
+
+    color: #121212;
+
+    font-size: 16px;
+    font-weight: 700;
+
+    word-break: break-word;
+}
+
+.instrucaoModal {
+    margin: 0 0 20px;
+
+    color: #777777;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+}
+
+
+/* ==========================================
+   CAMPO DO CÓDIGO
+========================================== */
+
+.entradaCodigo {
+    width: 100%;
+    height: 62px;
+
+    padding: 0 15px;
+
+    box-sizing: border-box;
+
+    border: 2px solid #dddddd;
+
+    border-radius: 10px;
+
+    outline: none;
+
+    background-color: #fafafa;
+
+    color: #121212;
+
+    text-align: center;
+
+    font-size: 28px;
+    font-weight: 700;
+
+    letter-spacing: 10px;
+
+    transition:
+            border-color 0.2s ease,
+            background-color 0.2s ease,
+            box-shadow 0.2s ease;
+}
+
+.entradaCodigo:focus {
+    border-color: #121212;
+
+    background-color: #ffffff;
+
+    box-shadow:
+            0 0 0 3px rgba(18, 18, 18, 0.08);
+}
+
+.entradaCodigo::placeholder {
+    color: #bbbbbb;
+
+    letter-spacing: 8px;
+}
+
+
+/* ==========================================
+   MENSAGENS DO CÓDIGO
+========================================== */
+
+.mensagemErro {
+    margin: 5px 0 15px;
+
+    color: #d62828;
+
+    font-size: 14px;
+
+    text-align: center;
+}
+
+.mensagemErroCodigo {
+    margin: 12px 0;
+
+    color: #d62828;
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+.mensagemSucesso {
+    margin: 12px 0;
+
+    color: #198754;
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+
+/* ==========================================
+   BOTÃO ATIVAR
+========================================== */
+
+.botaoAtivar {
+    width: 100%;
+    height: 52px;
+
+    margin-top: 20px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background-color: #121212;
+
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+            background-color 0.2s ease,
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+}
+
+.botaoAtivar:hover {
+    background-color: #292929;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+            0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.botaoAtivar:disabled {
+    opacity: 0.6;
+
+    cursor: not-allowed;
+
+    transform: none;
+
+    box-shadow: none;
+}
+
+
+/* ==========================================
+   REENVIO
+========================================== */
+
+.textoReenvio {
+    margin: 25px 0 8px;
+
+    color: #777777;
+
+    font-size: 13px;
+}
+
+.botaoReenviar {
+    border: none;
+
+    background: transparent;
+
+    color: #121212;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    text-decoration: underline;
+}
+
+.botaoReenviar:hover {
+    opacity: 0.7;
+}
+
+
+/* ==========================================
+   ANIMAÇÕES
+========================================== */
+
+@keyframes aparecerFundo {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+}
+
+@keyframes aparecerModal {
+
+    from {
+        opacity: 0;
+
+        transform: translateY(20px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+
+        transform: translateY(0) scale(1);
+    }
+
+}
+
+
+/* ==========================================
+   RESPONSIVIDADE
+========================================== */
+
+@media (max-width: 850px) {
+
+    .container {
+        min-height: calc(100vh - 160px);
+    }
+
+    .areaImagem {
+        display: none;
+    }
+
+    .areaFormulario {
+        padding: 30px 20px;
+    }
+
+    .cartaoCadastro {
+        max-width: 420px;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .areaFormulario {
+        padding: 25px 15px;
+    }
+
+    .cartaoCadastro {
+        padding: 25px 20px;
+
+        border-radius: 12px;
+    }
+
+    .titulo {
+        font-size: 1.3rem;
+    }
+
+
+    /* MODAL NO CELULAR */
+
+    .fundoModal {
+        padding: 15px;
+    }
+
+    .modalAtivacao {
+        max-width: 100%;
+
+        padding: 40px 25px;
+    }
+
+    .tituloModal {
+        font-size: 21px;
+    }
+
+    .iconeEmail {
+        width: 65px;
+        height: 65px;
+
+        font-size: 28px;
+    }
+
+    .entradaCodigo {
+        height: 55px;
+
+        font-size: 24px;
+
+        letter-spacing: 7px;
+    }
+
+}

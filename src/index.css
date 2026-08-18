@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+*{
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-family: 'Montserrat', sans-serif;
+}
+
+:root {
+  --cor-fundo: #FFFFFF;
+  --cor-texto: #000000;
+  --cor-texto-2: #FFFFFF;
+  --cor-confirmar: #000000;
+  --cor-botao-2: #FFFFFF;
+  --cor-destaque: #FF9C08;
+  --cor-card-financeiro: #000000;
+  --cor-card: #F5F5F5;
+  --cor-card-3: #FFFFFF;
+  --cor-hover-branco: #FFFFFF;
+
+  --cor-texto-negativo: #B91C1C;
+  --cor-botao-negativo: #FEE2E2;
+
+  --cor-texto-positivo: #15803D;
+  --cor-botao-positivo: #DCFCE7;
+
+  --cor-texto-categorizante: #9CA3AF;
+  --cor-check: #2563EB;
+
+
+  --cor-destaque-b: #FF9C08;
+  --cor-fundo-b: #000000;
+  --cor-texto-icone-b: #FF9C08;
+  --cor-card-b: #000000;
+}
+
+
