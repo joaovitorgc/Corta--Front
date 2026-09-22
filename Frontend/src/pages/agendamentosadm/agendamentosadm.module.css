@@ -1,0 +1,731 @@
+/* =====================================================
+   CONFIGURAÇÕES GERAIS
+===================================================== */
+
+.pagina {
+    width: 100%;
+    min-height: 100vh;
+
+    background: #ffffff;
+    color: #000000;
+
+    overflow-x: hidden;
+}
+
+.conteudo {
+    width: 100%;
+    max-width: 1400px;
+
+    margin: 0 auto;
+
+    padding: 58px 72px 85px;
+
+    box-sizing: border-box;
+}
+
+
+/* =====================================================
+   ANIMAÇÕES
+===================================================== */
+
+@keyframes aparecerPagina {
+
+    from {
+        opacity: 0;
+        transform: translateY(25px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+@keyframes aparecerTitulo {
+
+    from {
+        opacity: 0;
+        transform: translateX(-25px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+}
+
+@keyframes aparecerFiltro {
+
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+@keyframes aparecerLinha {
+
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+@keyframes aparecerPaginacao {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+}
+
+
+/* =====================================================
+   CABEÇALHO
+===================================================== */
+
+.cabecalhoPagina {
+    animation: aparecerTitulo 0.7s ease both;
+
+    margin-bottom: 42px;
+}
+
+.cabecalhoPagina h1 {
+    margin: 0 0 12px;
+
+    font-size: 30px;
+    font-weight: 950;
+
+    letter-spacing: -1px;
+}
+
+.cabecalhoPagina p {
+    margin: 0;
+
+    color: #7b8495;
+
+    font-size: 15px;
+    font-weight: 450;
+}
+
+
+/* =====================================================
+   FILTROS
+===================================================== */
+
+.filtros {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 25px;
+
+    margin-bottom: 42px;
+
+    animation: aparecerFiltro 0.7s ease both;
+    animation-delay: 0.15s;
+}
+
+.campoBusca {
+    width: 407px;
+    height: 44px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 13px;
+
+    padding: 0 16px;
+
+    background: #f5f5f5;
+
+    border-radius: 11px;
+
+    box-sizing: border-box;
+
+    transition:
+            background 0.3s ease,
+            box-shadow 0.3s ease;
+}
+
+.campoBusca:focus-within {
+    background: #eeeeee;
+
+    box-shadow:
+            0 0 0 2px rgba(0, 0, 0, 0.04);
+}
+
+.campoBusca svg {
+    color: #98a2b3;
+
+    font-size: 19px;
+
+    flex-shrink: 0;
+}
+
+.campoBusca input {
+    width: 100%;
+
+    border: none;
+    outline: none;
+
+    background: transparent;
+
+    color: #202020;
+
+    font-family: inherit;
+
+    font-size: 14px;
+}
+
+.campoBusca input::placeholder {
+    color: #9da6b6;
+}
+
+
+/* =====================================================
+   FILTROS DA DIREITA
+===================================================== */
+
+.filtrosDireita {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+}
+
+.filtroWrapper {
+    position: relative;
+}
+
+.botaoFiltro {
+    height: 44px;
+
+    padding: 0 17px;
+
+    border: none;
+    border-radius: 11px;
+
+    background: #f5f5f5;
+
+    color: #344054;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    font-family: inherit;
+
+    font-size: 13px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+            background 0.3s ease,
+            transform 0.3s ease;
+}
+
+.botaoFiltro:hover {
+    background: #eaeaea;
+
+    transform: translateY(-2px);
+}
+
+.botaoFiltro svg {
+    font-size: 16px;
+}
+
+.botaoFiltro svg:last-child {
+    font-size: 14px;
+
+    transition: transform 0.3s ease;
+}
+
+.iconeRotacionado {
+    transform: rotate(180deg);
+}
+
+
+/* =====================================================
+   DROPDOWN
+===================================================== */
+
+.dropdown {
+    position: absolute;
+
+    top: calc(100% + 8px);
+    right: 0;
+
+    min-width: 180px;
+
+    padding: 7px;
+
+    background: #ffffff;
+
+    border: 1px solid #eeeeee;
+
+    border-radius: 12px;
+
+    box-shadow:
+            0 12px 30px rgba(0, 0, 0, 0.10);
+
+    z-index: 20;
+
+    animation: aparecerFiltro 0.2s ease both;
+}
+
+.dropdown button {
+    width: 100%;
+
+    padding: 11px 12px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: transparent;
+
+    color: #333333;
+
+    text-align: left;
+
+    font-family: inherit;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+            background 0.2s ease;
+}
+
+.dropdown button:hover {
+    background: #f3f3f3;
+}
+
+
+/* =====================================================
+   TABELA
+===================================================== */
+
+.tabelaWrapper {
+    width: 100%;
+
+    overflow-x: auto;
+
+    animation: aparecerPagina 0.8s ease both;
+    animation-delay: 0.25s;
+}
+
+.tabelaWrapper table {
+    width: 100%;
+
+    min-width: 780px;
+
+    border-collapse: separate;
+    border-spacing: 0 12px;
+}
+
+.tabelaWrapper thead th {
+    padding: 0 30px 10px;
+
+    border-bottom: 1px solid #eeeeee;
+
+    color: #929cac;
+
+    text-align: left;
+
+    font-size: 12px;
+    font-weight: 900;
+
+    letter-spacing: 0.3px;
+}
+
+.tabelaWrapper thead th:last-child {
+    text-align: center;
+}
+
+.tabelaWrapper tbody tr {
+    background: #f5f5f5;
+
+    animation: aparecerLinha 0.55s ease both;
+    animation-delay: var(--delay);
+
+    transition:
+            background 0.3s ease,
+            transform 0.3s ease;
+}
+
+.tabelaWrapper tbody tr:hover {
+    background: #eeeeee;
+
+    transform: translateY(-2px);
+}
+
+.tabelaWrapper tbody td {
+    padding: 22px 30px;
+
+    font-size: 15px;
+
+    white-space: nowrap;
+}
+
+.tabelaWrapper tbody td:first-child {
+    border-radius: 15px 0 0 15px;
+}
+
+.tabelaWrapper tbody td:last-child {
+    border-radius: 0 15px 15px 0;
+}
+
+
+/* =====================================================
+   COLUNAS
+===================================================== */
+
+.cliente {
+    color: #111111;
+
+    font-weight: 850;
+}
+
+.servico {
+    color: #526074;
+
+    font-weight: 750;
+}
+
+.horario {
+    color: #101010;
+
+    font-weight: 850;
+}
+
+.data {
+    color: #526074;
+
+    font-weight: 750;
+}
+
+.statusColuna {
+    text-align: center;
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 96px;
+
+    padding: 5px 15px;
+
+    border-radius: 30px;
+
+    font-size: 11px;
+    font-weight: 950;
+
+    letter-spacing: 0.2px;
+}
+
+.statusConcluido {
+    background: #d9fbe7;
+
+    color: #16803d;
+}
+
+.statusPendente {
+    background: #e4e7eb;
+
+    color: #475467;
+}
+
+.statusCancelado {
+    background: #ffe0e0;
+
+    color: #e53939;
+}
+
+
+/* =====================================================
+   SEM RESULTADOS
+===================================================== */
+
+.semResultados {
+    text-align: center !important;
+
+    padding: 45px !important;
+
+    color: #929cac;
+
+    font-weight: 700;
+}
+
+
+/* =====================================================
+   RODAPÉ DA TABELA
+===================================================== */
+
+.rodapeTabela {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 25px;
+
+    margin-top: 28px;
+    padding: 0 15px;
+
+    animation: aparecerPaginacao 0.8s ease both;
+    animation-delay: 0.4s;
+}
+
+.rodapeTabela p {
+    margin: 0;
+
+    color: #718096;
+
+    font-size: 13px;
+}
+
+
+/* =====================================================
+   PAGINAÇÃO
+===================================================== */
+
+.paginacao {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+}
+
+.paginacao button {
+    width: 38px;
+    height: 38px;
+
+    border: none;
+    border-radius: 11px;
+
+    background: #f4f5f7;
+
+    color: #344054;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-family: inherit;
+
+    font-size: 14px;
+    font-weight: 850;
+
+    cursor: pointer;
+
+    transition:
+            background 0.25s ease,
+            color 0.25s ease,
+            transform 0.25s ease;
+}
+
+.paginacao button:hover:not(:disabled) {
+    background: #e5e7eb;
+
+    transform: translateY(-3px);
+}
+
+.paginacao button:active:not(:disabled) {
+    transform: scale(0.92);
+}
+
+.paginacao button:disabled {
+    opacity: 0.45;
+
+    cursor: not-allowed;
+}
+
+.paginacao .paginaAtiva {
+    background: #000000;
+
+    color: #ffffff;
+}
+
+.paginacao .paginaAtiva:hover {
+    background: #000000;
+}
+
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media (max-width: 1000px) {
+
+    .conteudo {
+        padding: 50px 35px 70px;
+    }
+
+    .filtros {
+        flex-wrap: wrap;
+    }
+
+    .campoBusca {
+        width: 100%;
+        max-width: 407px;
+    }
+
+    .tabelaWrapper tbody td,
+    .tabelaWrapper thead th {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+}
+
+
+/* =====================================================
+   CELULAR
+===================================================== */
+
+@media (max-width: 650px) {
+
+    .conteudo {
+        padding: 35px 18px 55px;
+    }
+
+    .cabecalhoPagina {
+        margin-bottom: 30px;
+    }
+
+    .cabecalhoPagina h1 {
+        font-size: 25px;
+    }
+
+    .cabecalhoPagina p {
+        font-size: 13px;
+
+        line-height: 1.6;
+    }
+
+    .filtros {
+        flex-direction: column;
+        align-items: stretch;
+
+        gap: 15px;
+
+        margin-bottom: 30px;
+    }
+
+    .campoBusca {
+        max-width: none;
+        width: 100%;
+    }
+
+    .filtrosDireita {
+        width: 100%;
+    }
+
+    .filtroWrapper {
+        flex: 1;
+    }
+
+    .botaoFiltro {
+        width: 100%;
+    }
+
+    .dropdown {
+        left: 0;
+        right: auto;
+
+        width: 100%;
+    }
+
+    .rodapeTabela {
+        flex-direction: column;
+        align-items: flex-start;
+
+        padding: 0;
+
+        gap: 20px;
+    }
+
+    .paginacao {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+}
+
+
+/* =====================================================
+   CELULAR PEQUENO
+===================================================== */
+
+@media (max-width: 420px) {
+
+    .cabecalhoPagina h1 {
+        font-size: 23px;
+    }
+
+    .filtrosDireita {
+        gap: 8px;
+    }
+
+    .botaoFiltro {
+        padding: 0 10px;
+
+        font-size: 11px;
+    }
+
+    .paginacao {
+        gap: 5px;
+    }
+
+    .paginacao button {
+        width: 34px;
+        height: 34px;
+    }
+
+}
+
+
+/* =====================================================
+   ACESSIBILIDADE
+===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+}
