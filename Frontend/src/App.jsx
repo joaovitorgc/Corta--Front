@@ -90,7 +90,7 @@ export default function App() {
                 <Route path="/agendamento" element={<Agendamento />} />
 
                 <Route path="/financeiro" element={<AdminFinaceiro />} />
-                
+
                 <Route path="/admin/usuarios" element={<AdminUsuarios />} />
                 <Route path="/editarusuario/:id" element={<EditarUsuario />} />
 
