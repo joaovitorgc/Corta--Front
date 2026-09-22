@@ -175,6 +175,16 @@
     padding: 0;
 }
 
+.acoesServico {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.acoesServico button:hover {
+    opacity: .7;
+}
+
 .tagAdd {
     display: inline-flex;
     align-items: center;

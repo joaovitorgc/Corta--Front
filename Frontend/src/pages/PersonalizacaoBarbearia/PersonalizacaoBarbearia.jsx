@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Image as ImageIcon, Plus, Scissors, Trash2, Upload, Users } from 'lucide-react';
+import { Image as ImageIcon, Plus, Scissors, Trash2, Upload, Users, Pencil } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API_URL, apiFetch, mensagemDaApi } from '../../services/api';
 import MensagemCard from '../../components/MensagemCard/MensagemCard';
@@ -32,6 +32,7 @@ export default function PersonalizacaoBarbearia({ modoEdicao = false }) {
     const [previewLogo, setPreviewLogo] = useState(null);
     const [previewsFotos, setPreviewsFotos] = useState([]);
     const [modalAberto, setModalAberto] = useState(false);
+    const [servicoEditando, setServicoEditando] = useState(null);
     const [carregando, setCarregando] = useState(true);
     const [salvando, setSalvando] = useState(false);
     const [mensagem, setMensagem] = useState(null);
@@ -81,26 +82,50 @@ export default function PersonalizacaoBarbearia({ modoEdicao = false }) {
     const alternarServicoFuncionario = (indice, idServico) => setFuncionarios((lista) => lista.map((funcionario, i) => i === indice ? { ...funcionario, servicos: funcionario.servicos.includes(idServico) ? funcionario.servicos.filter((id) => id !== idServico) : [...funcionario.servicos, idServico] } : funcionario));
     const alternarDiaFuncionario = (indice, chaveDia) => setFuncionarios((lista) => lista.map((funcionario, i) => i === indice ? { ...funcionario, dias: funcionario.dias.includes(chaveDia) ? funcionario.dias.filter((dia) => dia !== chaveDia) : [...funcionario.dias, chaveDia] } : funcionario));
 
-    async function adicionarServico(servico) {
+    async function salvarServico(servico) {
         try {
+            const editando = Boolean(servicoEditando);
+            const endpoint = editando
+                ? `/barbearia/servicos/${servicoEditando.id_servico}${sufixoUsuario}`
+                : `/barbearia/servicos${sufixoUsuario}`;
+
             const resposta = await apiFetch(
-                `/barbearia/servicos${sufixoUsuario}`,
+                endpoint,
                 {
-                    method: 'POST',
+                    method: editando ? 'PUT' : 'POST',
                     body: JSON.stringify(servico)
                 }
             );
 
-            setServicos((lista) => [...lista, resposta.servico]);
+            if (editando) {
+                setServicos((lista) => lista.map((item) =>
+                    item.id_servico === servicoEditando.id_servico
+                        ? resposta.servico
+                        : item
+                ));
+            } else {
+                setServicos((lista) => [...lista, resposta.servico]);
+            }
+
+            setServicoEditando(null);
             setModalAberto(false);
             setMensagem(resposta.mensagem);
-
         } catch (erro) {
             setMensagem({
                 informacao: mensagemDaApi(erro),
                 tipo: 'erro'
             });
         }
+    }
+
+    function abrirAdicionarServico() {
+        setServicoEditando(null);
+        setModalAberto(true);
+    }
+
+    function abrirEditarServico(servico) {
+        setServicoEditando(servico);
+        setModalAberto(true);
     }
 
     async function removerServico(servico) {
@@ -150,7 +175,7 @@ export default function PersonalizacaoBarbearia({ modoEdicao = false }) {
         <form className={styles.container} onSubmit={salvar}>
             <div className={`${styles.span2} ${styles.cabecalhoPagina}`}><p className={styles.eyebrow}>{modoEdicao ? 'GESTÃO DO ESTABELECIMENTO' : 'PRIMEIROS PASSOS'}</p><h1 className={styles.titulo}>{modoEdicao ? 'Editar barbearia' : 'Personalize sua barbearia'}</h1><p className={styles.subtitulo}>Organize sua vitrine, equipe, serviços, horários e identidade visual em um só lugar.</p><div /></div>
             {carregando ? <p className={styles.carregando}>Carregando dados da barbearia…</p> : <>
-                <section className={`${styles.section} ${styles.span2}`}><div className={styles.sectionHead}><span className={styles.dot}><Scissors size={16} /></span>Serviços disponíveis</div><div className={styles.tags}>{servicos.map((servico) => <span className={styles.tag} key={servico.id_servico}>{servico.nome}<button type="button" onClick={() => removerServico(servico)} aria-label={`Remover ${servico.nome}`}><Trash2 size={13} /></button></span>)}<button type="button" className={styles.tagAdd} onClick={() => setModalAberto(true)}><Plus size={13} />Adicionar serviço</button></div></section>
+                <section className={`${styles.section} ${styles.span2}`}><div className={styles.sectionHead}><span className={styles.dot}><Scissors size={16} /></span>Serviços disponíveis</div><div className={styles.tags}>{servicos.map((servico) => <span className={styles.tag} key={servico.id_servico}><span>{servico.nome}</span><span className={styles.acoesServico}><button type="button" onClick={() => abrirEditarServico(servico)} aria-label={`Editar ${servico.nome}`}><Pencil size={13} /></button><button type="button" onClick={() => removerServico(servico)} aria-label={`Remover ${servico.nome}`}><Trash2 size={13} /></button></span></span>)}<button type="button" className={styles.tagAdd} onClick={abrirAdicionarServico}><Plus size={13} />Adicionar serviço</button></div></section>
                 <section className={`${styles.section} ${styles.span2}`}><TabelaHorarios dias={dias} onToggleDia={(nome) => setDias((lista) => lista.map((dia) => dia.nome === nome ? { ...dia, fechado: !dia.fechado } : dia))} onChangeHorario={(nome, campo, valor) => setDias((lista) => lista.map((dia) => dia.nome === nome ? { ...dia, [campo]: valor } : dia))} /></section>
                 <section className={styles.section}><div className={styles.sectionHead}><span className={styles.dot}><Users size={16} /></span>Equipe</div>
                     {funcionarios.map((funcionario, indice) => <div className={styles.funcionario} key={funcionario.id}>
@@ -169,6 +194,6 @@ export default function PersonalizacaoBarbearia({ modoEdicao = false }) {
                 <div className={styles.span2}><button className={styles.btnPrimario} disabled={salvando}>{salvando ? 'SALVANDO…' : modoEdicao ? 'SALVAR ALTERAÇÕES' : 'CRIAR BARBEARIA'}</button></div>
             </>}
         </form>
-        <ModalAdicionarServico open={modalAberto} onClose={() => setModalAberto(false)} onAdd={adicionarServico} />
+        <ModalAdicionarServico open={modalAberto} onClose={() => { setModalAberto(false); setServicoEditando(null); }} onAdd={salvarServico} servicoEditando={servicoEditando} />
     </main>;
 }
