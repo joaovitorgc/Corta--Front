@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { X, Plus, Scissors, Pencil } from "lucide-react";
 import styles from "./ModalAdicionarServico.module.css";
@@ -11,18 +12,33 @@ const DURACOES = [
     { label: "2 h", value: 120 },
 ];
 
+const GENEROS = [
+    { label: "Masculino", value: "Masculino" },
+    { label: "Feminino", value: "Feminino" },
+    { label: "Unissex", value: "Unissex" },
+];
+
+const TIPOS = [
+    { label: "Cabelo", value: "Cabelo" },
+    { label: "Barba", value: "Barba" },
+];
+
 export default function ModalAdicionarServico({
-    open,
-    onClose,
-    onAdd,
-    servicoEditando = null
-}) {
+                                                  open,
+                                                  onClose,
+                                                  onAdd,
+                                                  servicoEditando = null
+                                              }) {
     const [nome, setNome] = useState("");
     const [preco, setPreco] = useState("");
     const [duracao, setDuracao] = useState(30);
     const [descricao, setDescricao] = useState("");
+    const [genero, setGenero] = useState("Unissex");
+    const [tipo, setTipo] = useState("Cabelo");
 
-    const editando = servicoEditando !== null && servicoEditando !== undefined;
+    const editando =
+        servicoEditando !== null &&
+        servicoEditando !== undefined;
 
     useEffect(() => {
         if (!open) return;
@@ -50,43 +66,76 @@ export default function ModalAdicionarServico({
                 "";
 
             setNome(String(nomeServico));
+
             setPreco(
                 precoServico === ""
                     ? ""
                     : String(precoServico).replace(".", ",")
             );
-            setDuracao(Number.parseInt(duracaoServico, 10) || 30);
+
+            setDuracao(
+                Number.parseInt(duracaoServico, 10) || 30
+            );
+
             setDescricao(String(descricaoServico));
+
+            setGenero(
+                servicoEditando.genero ??
+                servicoEditando.genero_servico ??
+                "Unissex"
+            );
+
+            setTipo(
+                servicoEditando.tipo ??
+                servicoEditando.tipo_servico ??
+                "Cabelo"
+            );
         } else {
             setNome("");
             setPreco("");
             setDuracao(30);
             setDescricao("");
+            setGenero("Unissex");
+            setTipo("Cabelo");
         }
     }, [open, servicoEditando, editando]);
 
     if (!open) return null;
 
     const valorNumerico = Number(
-        String(preco).replace(/\./g, "").replace(",", ".")
+        String(preco)
+            .replace(/\./g, "")
+            .replace(",", ".")
     );
 
     const podeSalvar =
         nome.trim().length > 0 &&
         preco !== "" &&
         Number.isFinite(valorNumerico) &&
-        valorNumerico >= 0;
+        valorNumerico >= 0 &&
+        genero !== "" &&
+        tipo !== "";
+
 
     const handleSalvar = async () => {
         if (!podeSalvar) return;
 
-        await onAdd({
+        const dadosServico = {
             nome: nome.trim(),
-            preco,
+            preco: Number(
+                String(preco)
+                    .replace(/\./g, '')
+                    .replace(',', '.')
+            ),
             duracao: Number(duracao),
-            descricao: descricao.trim()
-        });
+            descricao: descricao.trim(),
+            genero,
+            tipo
+        };
+
+        await onAdd(dadosServico);
     };
+
 
     return (
         <div
@@ -118,7 +167,10 @@ export default function ModalAdicionarServico({
 
                 <div className={styles.regua} />
 
-                <label className={styles.label} htmlFor="nome-servico">
+                <label
+                    className={styles.label}
+                    htmlFor="nome-servico"
+                >
                     Nome do Serviço
                 </label>
 
@@ -128,11 +180,15 @@ export default function ModalAdicionarServico({
                     placeholder="Ex: Corte Degradê"
                     value={nome}
                     onChange={(e) => setNome(e.target.value)}
+                    required
                 />
 
                 <div className={styles.linhaDupla}>
                     <div>
-                        <label className={styles.label} htmlFor="preco-servico">
+                        <label
+                            className={styles.label}
+                            htmlFor="preco-servico"
+                        >
                             Preço (R$)
                         </label>
 
@@ -152,7 +208,10 @@ export default function ModalAdicionarServico({
                     </div>
 
                     <div>
-                        <label className={styles.label} htmlFor="duracao-servico">
+                        <label
+                            className={styles.label}
+                            htmlFor="duracao-servico"
+                        >
                             Duração
                         </label>
 
@@ -160,10 +219,15 @@ export default function ModalAdicionarServico({
                             id="duracao-servico"
                             className={styles.select}
                             value={duracao}
-                            onChange={(e) => setDuracao(e.target.value)}
+                            onChange={(e) =>
+                                setDuracao(Number(e.target.value))
+                            }
                         >
                             {DURACOES.map((d) => (
-                                <option key={d.value} value={d.value}>
+                                <option
+                                    key={d.value}
+                                    value={d.value}
+                                >
                                     {d.label}
                                 </option>
                             ))}
@@ -171,7 +235,64 @@ export default function ModalAdicionarServico({
                     </div>
                 </div>
 
-                <label className={styles.label} htmlFor="descricao-servico">
+                <div className={styles.linhaDupla}>
+                    <div>
+                        <label
+                            className={styles.label}
+                            htmlFor="genero-servico"
+                        >
+                            Gênero
+                        </label>
+
+                        <select
+                            id="genero-servico"
+                            className={styles.select}
+                            value={genero}
+                            onChange={(e) => setGenero(e.target.value)}
+                            required
+                        >
+                            {GENEROS.map((opcao) => (
+                                <option
+                                    key={opcao.value}
+                                    value={opcao.value}
+                                >
+                                    {opcao.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label
+                            className={styles.label}
+                            htmlFor="tipo-servico"
+                        >
+                            Tipo
+                        </label>
+
+                        <select
+                            id="tipo-servico"
+                            className={styles.select}
+                            value={tipo}
+                            onChange={(e) => setTipo(e.target.value)}
+                            required
+                        >
+                            {TIPOS.map((opcao) => (
+                                <option
+                                    key={opcao.value}
+                                    value={opcao.value}
+                                >
+                                    {opcao.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                <label
+                    className={styles.label}
+                    htmlFor="descricao-servico"
+                >
                     Descrição Breve
                 </label>
 
@@ -185,17 +306,27 @@ export default function ModalAdicionarServico({
                 />
 
                 <div className={styles.dica}>
-                    <Scissors size={16} color="var(--cor-destaque)" />
+                    <Scissors
+                        size={16}
+                        color="var(--cor-destaque)"
+                    />
                     Personalize os detalhes para seus clientes.
                 </div>
 
                 <button
                     type="submit"
                     className={styles.botaoPrimario}
-                    disabled={""}
+                    disabled={!podeSalvar}
                 >
-                    {editando ? <Pencil size={16} /> : <Plus size={16} />}
-                    {editando ? "SALVAR ALTERAÇÕES" : "ADICIONAR"}
+                    {editando ? (
+                        <Pencil size={16} />
+                    ) : (
+                        <Plus size={16} />
+                    )}
+
+                    {editando
+                        ? "SALVAR ALTERAÇÕES"
+                        : "ADICIONAR"}
                 </button>
 
                 <button

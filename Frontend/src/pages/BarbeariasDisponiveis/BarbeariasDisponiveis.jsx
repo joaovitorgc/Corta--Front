@@ -5,6 +5,29 @@ import { useNavigate } from 'react-router-dom';
 import styles from './BarbeariasDisponiveis.module.css';
 import { apiFetch, API_URL } from '../../services/api';
 
+// Normaliza o item vindo da API para o formato usado pela tela.
+function normalizarBarbearia(item) {
+    const imagem = item.imagem || item.logo || null;
+
+    return {
+        id: item.id ?? item.id_barbearia,
+        id_usuario: item.id_usuario,
+        nome: item.nome || '',
+        endereco: item.endereco || '',
+        horario: item.horario || '',
+        dias: item.dias || '',
+        imagem,
+        personalizada: Boolean(item.personalizada ?? imagem),
+    };
+}
+
+// Evita "//" quando API_URL termina com barra e o caminho começa com barra.
+function montarUrlImagem(caminho) {
+    if (!caminho) return null;
+    if (/^https?:\/\//i.test(caminho)) return caminho;
+    return `${API_URL.replace(/\/$/, '')}/${caminho.replace(/^\//, '')}`;
+}
+
 export default function Barbearias() {
     const navigate = useNavigate();
     const [busca, setBusca] = useState('');
@@ -18,8 +41,9 @@ export default function Barbearias() {
                 setCarregando(true);
                 setErro('');
 
-                const dados = await apiFetch('/barbearias-disponiveis');
-                setBarbearias(Array.isArray(dados) ? dados : []);
+                const dados = await apiFetch('/listar_barbearias_disponiveis');
+                const lista = Array.isArray(dados) ? dados : [];
+                setBarbearias(lista.map(normalizarBarbearia));
             } catch (error) {
                 console.error('Erro ao carregar barbearias:', error);
                 setErro('Não foi possível carregar as barbearias disponíveis.');
@@ -32,8 +56,9 @@ export default function Barbearias() {
         carregarBarbearias();
     }, []);
 
+    const termo = busca.trim().toLowerCase();
     const barbeariasFiltradas = barbearias.filter((barbearia) =>
-        barbearia.nome.toLowerCase().includes(busca.toLowerCase())
+        barbearia.nome.toLowerCase().includes(termo)
     );
 
     return (
@@ -62,60 +87,66 @@ export default function Barbearias() {
                     </div>
                 </div>
 
-                {carregando && (
-                    <p>Carregando barbearias...</p>
-                )}
+                {carregando && <p>Carregando barbearias...</p>}
 
-                {!carregando && erro && (
-                    <p>{erro}</p>
-                )}
+                {!carregando && erro && <p>{erro}</p>}
 
                 {!carregando && !erro && barbeariasFiltradas.length === 0 && (
-                    <p>Nenhuma barbearia personalizada encontrada.</p>
+                    <p>Nenhuma barbearia encontrada.</p>
                 )}
 
                 {!carregando && !erro && barbeariasFiltradas.length > 0 && (
                     <div className={styles.grid}>
-                        {barbeariasFiltradas.map((barbearia) => (
-                            <article
-                                key={barbearia.id}
-                                className={styles.card}
-                                style={
-                                    barbearia.imagem
-                                        ? { backgroundImage: `url(${API_URL}${barbearia.imagem})` }
-                                        : undefined
-                                }
-                            >
-                                <div className={styles.cardOverlay}>
-                                    <span className={styles.badgeDias}>{barbearia.dias}</span>
+                        {barbeariasFiltradas.map((barbearia) => {
+                            const urlImagem = montarUrlImagem(barbearia.imagem);
 
-                                    <div className={styles.cardConteudo}>
-                                        <h3 className={styles.cardNome}>{barbearia.nome}</h3>
+                            return (
+                                <article
+                                    key={barbearia.id}
+                                    className={styles.card}
+                                    style={
+                                        urlImagem
+                                            ? { backgroundImage: `url("${urlImagem}")` }
+                                            : undefined
+                                    }
+                                >
+                                    <div className={styles.cardOverlay}>
+                                        {barbearia.dias && (
+                                            <span className={styles.badgeDias}>{barbearia.dias}</span>
+                                        )}
 
-                                        <div className={styles.infoLinha}>
-                                            <LuMapPin className={styles.infoIcone} size={14} />
-                                            <span>{barbearia.endereco || 'Endereço não informado'}</span>
+                                        <div className={styles.cardConteudo}>
+                                            <h3 className={styles.cardNome}>{barbearia.nome}</h3>
+
+                                            <div className={styles.infoLinha}>
+                                                <LuMapPin className={styles.infoIcone} size={14} />
+                                                <span>{barbearia.endereco || 'Endereço não informado'}</span>
+                                            </div>
+
+                                            <div className={styles.infoLinha}>
+                                                <LuClock className={styles.infoIcone} size={14} />
+                                                <span>
+                                                    Horário de Atendimento: {barbearia.horario || 'Não informado'}
+                                                </span>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                className={styles.btnAgendar}
+                                                disabled={!barbearia.personalizada}
+                                                onClick={() =>
+                                                    navigate(`/estabelecimento?usuario=${barbearia.id_usuario}`)
+                                                }
+                                            >
+                                                {barbearia.personalizada
+                                                    ? 'Ver estabelecimento'
+                                                    : 'Em configuração'}
+                                            </button>
                                         </div>
-
-                                        <div className={styles.infoLinha}>
-                                            <LuClock className={styles.infoIcone} size={14} />
-                                            <span>
-                                                Horário de Atendimento: {barbearia.horario || 'Não informado'}
-                                            </span>
-                                        </div>
-
-                                        <button
-                                            type="button"
-                                            className={styles.btnAgendar}
-                                            disabled={!barbearia.personalizada}
-                                            onClick={() => navigate(`/estabelecimento?usuario=${barbearia.id}`)}
-                                        >
-                                            {barbearia.personalizada ? 'Ver estabelecimento' : 'Em configuração'}
-                                        </button>
                                     </div>
-                                </div>
-                            </article>
-                        ))}
+                                </article>
+                            );
+                        })}
                     </div>
                 )}
             </main>

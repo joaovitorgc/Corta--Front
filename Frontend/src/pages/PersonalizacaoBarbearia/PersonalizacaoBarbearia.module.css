@@ -15,6 +15,18 @@
     gap: 22px;
 }
 
+.tagDesativada {
+    background-color: #e5e7eb;
+    color: #777777;
+    border-color: #d1d5db;
+    opacity: 0.7;
+}
+
+.tagDesativada button {
+    color: #777777;
+}
+
+
 @media (min-width: 860px) {
     .container {
         max-width: 1120px;

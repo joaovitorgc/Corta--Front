@@ -24,18 +24,54 @@ export default function Estabelecimento() {
     const [erro, setErro] = useState('');
     const [profissionalSelecionado, setProfissionalSelecionado] = useState(null);
 
+
     useEffect(() => {
+        let ativo = true;
+
         async function carregar() {
             try {
-                const [personalizacao, servicosDaApi] = await Promise.all([
-                    apiFetch(`/barbearia/personalizacao${sufixoUsuario}`), apiFetch(`/barbearia/servicos${sufixoUsuario}`),
+                setErro('');
+
+                const [personalizacao, respostaServicos] = await Promise.all([
+                    apiFetch(`/barbearia/personalizacao${sufixoUsuario}`),
+                    apiFetch(`/barbearia/servicos${sufixoUsuario}`)
                 ]);
+
+                if (!ativo) return;
+
                 setDados(personalizacao);
-                setServicos(servicosDaApi.servicos || []);
-            } catch (error) { setErro(mensagemDaApi(error)); }
+
+                const listaServicos = Array.isArray(respostaServicos)
+                    ? respostaServicos
+                    : Array.isArray(respostaServicos?.servicos)
+                        ? respostaServicos.servicos
+                        : Array.isArray(respostaServicos?.dados)
+                            ? respostaServicos.dados
+                            : Array.isArray(respostaServicos?.data)
+                                ? respostaServicos.data
+                                : [];
+
+                setServicos(
+                    listaServicos.filter(
+                        (servico) => Number(servico.ativo) !== 0
+                    )
+                );
+
+                console.log('Resposta dos serviços:', respostaServicos);
+                console.log('Lista de serviços:', listaServicos);
+            } catch (error) {
+                if (ativo) {
+                    console.error('Erro ao carregar serviços:', error);
+                    setErro(mensagemDaApi(error));
+                }
+            }
         }
         carregar();
+        return () => {
+            ativo = false;
+        };
     }, [sufixoUsuario]);
+
 
     if (erro) return <main className={styles.container}><p>{erro}</p></main>;
     if (!dados) return <main className={styles.container}><p>Carregando estabelecimento…</p></main>;
@@ -130,18 +166,44 @@ export default function Estabelecimento() {
                             </button>
                         </div>
 
+
                         {categoria === 'Serviços' && (
                             <div className={styles.listaServicos}>
-                                {servicos.map((servico) => (
-                                    <CardServico
-                                        key={servico.id_servico}
-                                        nome={servico.nome}
-                                        tempo={formatarDuracao(servico.duracao)}
-                                        preco={formatarPreco(servico.preco)}
-                                    />
-                                ))}
+                                {servicos.length > 0 ? (
+                                    servicos.map((servico, indice) => (
+                                        <CardServico
+                                            key={servico.id_servico ?? indice}
+                                            nome={
+                                                servico.nome ??
+                                                servico.nome_servico ??
+                                                servico.titulo ??
+                                                'Serviço'
+                                            }
+                                            tempo={`${Number(
+                                                servico.duracao ??
+                                                servico.duracao_minutos ??
+                                                servico.tempo ??
+                                                0
+                                            )} MIN`}
+                                            preco={Number(
+                                                servico.preco ??
+                                                servico.valor ??
+                                                servico.preco_servico ??
+                                                0
+                                            ).toLocaleString('pt-BR', {
+                                                style: 'currency',
+                                                currency: 'BRL'
+                                            })}
+                                        />
+                                    ))
+                                ) : (
+                                    <p className={styles.mensagemVazia}>
+                                        Nenhum serviço cadastrado.
+                                    </p>
+                                )}
                             </div>
                         )}
+
 
                         {categoria === 'Profissionais' && (
                             <div className={styles.listaProfissionais}>
