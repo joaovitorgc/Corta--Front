@@ -7,7 +7,7 @@ import Home from './pages/Home/Home';
 import Login from './pages/Login/Login';
 import Cadastro from './pages/Cadastro/Cadastro';
 import RedefinirSenha from './pages/RedefinacaoSenha/RedefinacaoSenha';
-import EditarUsuario from './pages/EditarUsuario/EditarUsuario';
+import EditarUsuario1 from './pages/EditarUsuario/EditarUsuario.jsx';
 import VerificarCodigo from './pages/VerificarCodigo/VerificarCodigo';
 import Estabelecimento from './pages/Estabelecimento/Estabelecimento';
 import CadastroBarbearia from './pages/CadastroBarbearia/CadastroBarbearia.jsx';
@@ -52,7 +52,7 @@ export default function App() {
 
                 <Route
                     path="/editarusuario"
-                    element={<EditarUsuario />}
+                    element={<EditarUsuario1 />}
                 />
 
                 <Route
@@ -92,7 +92,7 @@ export default function App() {
                 <Route path="/financeiro" element={<AdminFinaceiro />} />
 
                 <Route path="/admin/usuarios" element={<AdminUsuarios />} />
-                <Route path="/editarusuario/:id" element={<EditarUsuario />} />
+                <Route path="/editarusuario/:id" element={<EditarUsuario1 />} />
 
 
             </Routes>

@@ -13,109 +13,63 @@ export const API_URL =
 // API FETCH
 // ==========================================================
 
-export async function apiFetch(endpoint, options = {}) {
-
-    const headers = {
-        ...(options.headers || {})
-    };
-
-
-    // ======================================================
-    // JSON
-    // ======================================================
-
-    if (
-        options.body &&
-        !(options.body instanceof FormData)
-    ) {
-
-        headers['Content-Type'] =
-            'application/json';
-    }
-
-
-    // ======================================================
-    // REQUISIÇÃO
-    // ======================================================
-
-    const resposta = await fetch(
-        `${API_URL}${endpoint}`,
-        {
-            ...options,
-
-            // IMPORTANTE:
-            // permite o envio automático do cookie
-            credentials: 'include',
-
-            headers
-        }
-    );
-
-
-    // ======================================================
-    // LER RESPOSTA
-    // ======================================================
-
-    const texto =
-        await resposta.text();
-
-    let dados;
-
-
-    try {
-
-        dados =
-            texto
-                ? JSON.parse(texto)
-                : {};
-
-    } catch {
-
-        dados = {
-
-            mensagem: {
-
-                informacao:
-                    texto ||
-                    'Resposta inválida do servidor.',
-
-                tipo:
-                    'erro'
-            }
+    export async function apiFetch(endpoint, options = {}) {
+        const headers = {
+            ...(options.headers || {})
         };
-    }
 
+        // Define JSON apenas quando houver corpo que não seja FormData
+        if (
+            options.body &&
+            !(options.body instanceof FormData) &&
+            !headers['Content-Type'] &&
+            !headers['content-type']
+        ) {
+            headers['Content-Type'] = 'application/json';
+        }
 
-    // ======================================================
-    // TRATAR ERRO HTTP
-    // ======================================================
+        const resposta = await fetch(
+            `${API_URL}${endpoint}`,
+            {
+                ...options,
+                credentials: 'include',
+                headers
+            }
+        );
 
-    if (!resposta.ok) {
+        const texto = await resposta.text();
 
-        const erro =
-            new Error(
+        let dados;
 
+        try {
+            dados = texto ? JSON.parse(texto) : {};
+        } catch {
+            dados = {
+                mensagem: {
+                    informacao:
+                        texto || 'Resposta inválida do servidor.',
+                    tipo: 'erro'
+                }
+            };
+        }
+
+        if (!resposta.ok) {
+            const erro = new Error(
                 dados?.mensagem?.informacao ||
-
                 dados?.erro?.informacao ||
-
                 dados?.erro ||
-
-                'Não foi possível concluir a operação.'
+                dados?.informacao ||
+                `Erro HTTP ${resposta.status}.`
             );
 
-        erro.status =
-            resposta.status;
+            erro.status = resposta.status;
+            erro.dados = dados;
 
-        erro.dados =
-            dados;
+            throw erro;
+        }
 
-        throw erro;
+        return dados;
     }
-
-
-    return dados;
-}
 
 
 // ==========================================================
@@ -123,17 +77,12 @@ export async function apiFetch(endpoint, options = {}) {
 // ==========================================================
 
 export function mensagemDaApi(erro) {
-
     return (
-
         erro?.dados?.mensagem?.informacao ||
-
         erro?.dados?.erro?.informacao ||
-
         erro?.dados?.erro ||
-
+        erro?.dados?.informacao ||
         erro?.message ||
-
         'Ocorreu um erro ao comunicar com o servidor.'
     );
 }

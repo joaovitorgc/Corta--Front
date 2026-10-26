@@ -18,9 +18,7 @@ import {
 
 import MensagemCard from '../../components/MensagemCard/MensagemCard';
 
-
 const API_URL = 'http://localhost:5000';
-
 
 export default function EditarUsuario() {
 
@@ -63,7 +61,6 @@ export default function EditarUsuario() {
     // ==================================================
 
     const [mensagem, setMensagem] = useState(null);
-
 
     // ==================================================
     // URL DA FOTO
@@ -112,7 +109,6 @@ export default function EditarUsuario() {
         return url;
     };
 
-
     // ==================================================
     // CARREGAR USUÁRIO
     // ==================================================
@@ -120,7 +116,6 @@ export default function EditarUsuario() {
     useEffect(() => {
 
         let ativo = true;
-
 
         const carregarUsuario = async () => {
 
@@ -132,7 +127,6 @@ export default function EditarUsuario() {
 
                 const usuarioSalvo =
                     localStorage.getItem('usuario');
-
 
                 if (!usuarioSalvo) {
 
@@ -146,7 +140,6 @@ export default function EditarUsuario() {
 
                     return;
                 }
-
 
                 // ==================================================
                 // CONVERTER JSON
@@ -177,7 +170,6 @@ export default function EditarUsuario() {
                     return;
                 }
 
-
                 // ==================================================
                 // PEGAR ID
                 // ==================================================
@@ -185,7 +177,6 @@ export default function EditarUsuario() {
                 const id = idDaRota
                     ? Number(idDaRota)
                     : (usuario.id_usuario ?? usuario.id ?? null);
-
 
                 if (!id) {
 
@@ -205,14 +196,11 @@ export default function EditarUsuario() {
                     return;
                 }
 
-
                 if (!ativo) {
                     return;
                 }
 
-
                 setIdUsuario(id);
-
 
                 // ==================================================
                 // PREENCHER DADOS TEMPORÁRIOS
@@ -231,7 +219,6 @@ export default function EditarUsuario() {
                         usuario.telefone || ''
                     ).replace(/\D/g, '')
                 );
-
 
                 // ==================================================
                 // FOTO
@@ -253,25 +240,22 @@ export default function EditarUsuario() {
                     setImagem(null);
                 }
 
-
                 // ==================================================
                 // BUSCAR DADOS ATUALIZADOS
                 // ==================================================
 
                 console.log(
                     'BUSCANDO PERFIL:',
-                    `/dados-perfil/${id}`
+                    `/dados_perfil/${id}`
                 );
-
 
                 const dados =
                     await apiFetch(
-                        `/dados-perfil/${id}`,
+                        `/dados_perfil/${id}`,
                         {
                             method: 'GET'
                         }
                     );
-
 
                 if (
                     !ativo ||
@@ -280,7 +264,6 @@ export default function EditarUsuario() {
                     return;
                 }
 
-
                 // ==================================================
                 // USUÁRIO ATUALIZADO
                 // ==================================================
@@ -288,12 +271,10 @@ export default function EditarUsuario() {
                 const usuarioAtualizado =
                     dados.usuario;
 
-
                 console.log(
                     'PERFIL RECEBIDO:',
                     usuarioAtualizado
                 );
-
 
                 // ==================================================
                 // ATUALIZAR ESTADOS
@@ -318,7 +299,6 @@ export default function EditarUsuario() {
                     ).replace(/\D/g, '')
                 );
 
-
                 // ==================================================
                 // ATUALIZAR FOTO
                 // ==================================================
@@ -339,7 +319,6 @@ export default function EditarUsuario() {
                     setImagem(null);
                 }
 
-
                 // ==================================================
                 // ATUALIZAR LOCALSTORAGE
                 // ==================================================
@@ -359,11 +338,9 @@ export default function EditarUsuario() {
                         id
                 };
 
-
                 if (!idDaRota || Number(idDaRota) === Number(usuario.id_usuario ?? usuario.id)) {
                     localStorage.setItem('usuario', JSON.stringify(usuarioFinal));
                 }
-
 
                 console.log(
                     'LOCALSTORAGE ATUALIZADO:',
@@ -377,7 +354,6 @@ export default function EditarUsuario() {
                     error
                 );
 
-
                 if (
                     error.status === 401
                 ) {
@@ -385,7 +361,6 @@ export default function EditarUsuario() {
                     console.warn(
                         'Cookie/token não foi aceito pelo servidor.'
                     );
-
 
                     setMensagem({
 
@@ -399,7 +374,6 @@ export default function EditarUsuario() {
 
                     return;
                 }
-
 
                 if (
                     error.status === 403
@@ -418,7 +392,6 @@ export default function EditarUsuario() {
                     return;
                 }
 
-
                 if (
                     error.status === 404
                 ) {
@@ -435,7 +408,6 @@ export default function EditarUsuario() {
 
                     return;
                 }
-
 
                 setMensagem({
 
@@ -458,9 +430,7 @@ export default function EditarUsuario() {
             }
         };
 
-
         carregarUsuario();
-
 
         return () => {
 
@@ -469,7 +439,6 @@ export default function EditarUsuario() {
         };
 
     }, [navigate, idDaRota]);
-
 
     // ==================================================
     // ALTERAR FOTO
@@ -480,11 +449,9 @@ export default function EditarUsuario() {
         const arquivo =
             e.target.files?.[0];
 
-
         if (!arquivo) {
             return;
         }
-
 
         const tiposPermitidos = [
 
@@ -493,7 +460,6 @@ export default function EditarUsuario() {
             'image/webp'
 
         ];
-
 
         if (
             !tiposPermitidos.includes(
@@ -511,16 +477,13 @@ export default function EditarUsuario() {
 
             });
 
-
             e.target.value = '';
 
             return;
         }
 
-
         const tamanhoMaximo =
             5 * 1024 * 1024;
-
 
         if (
             arquivo.size >
@@ -537,27 +500,22 @@ export default function EditarUsuario() {
 
             });
 
-
             e.target.value = '';
 
             return;
         }
 
-
         setArquivoImagem(
             arquivo
         );
-
 
         const url =
             URL.createObjectURL(
                 arquivo
             );
 
-
         setImagem(url);
     };
-
 
     // ==================================================
     // EXCLUIR FOTO
@@ -580,7 +538,6 @@ export default function EditarUsuario() {
             return;
         }
 
-
         if (
             !imagem &&
             !arquivoImagem
@@ -599,21 +556,18 @@ export default function EditarUsuario() {
             return;
         }
 
-
         try {
 
             const dados =
                 await apiFetch(
-                    `/excluir-foto-perfil/${idUsuario}`,
+                    `/excluir_foto_perfil/${idUsuario}`,
                     {
                         method: 'DELETE'
                     }
                 );
 
-
             setArquivoImagem(null);
             setImagem(null);
-
 
             // ==================================================
             // ATUALIZAR LOCALSTORAGE
@@ -626,7 +580,6 @@ export default function EditarUsuario() {
                     )
                 ) || {};
 
-
             const usuarioAtualizado = {
 
                 ...usuarioAtual,
@@ -636,14 +589,12 @@ export default function EditarUsuario() {
 
             };
 
-
             localStorage.setItem(
                 'usuario',
                 JSON.stringify(
                     usuarioAtualizado
                 )
             );
-
 
             // ==================================================
             // AVISAR HEADER
@@ -654,7 +605,6 @@ export default function EditarUsuario() {
                     'loginAlterado'
                 )
             );
-
 
             setMensagem(
                 dados?.mensagem || {
@@ -675,7 +625,6 @@ export default function EditarUsuario() {
                 error
             );
 
-
             if (
                 error.status === 401
             ) {
@@ -692,7 +641,6 @@ export default function EditarUsuario() {
 
                 return;
             }
-
 
             if (
                 error.status === 403
@@ -711,14 +659,12 @@ export default function EditarUsuario() {
                 return;
             }
 
-
             if (
                 error.status === 404
             ) {
 
                 setImagem(null);
                 setArquivoImagem(null);
-
 
                 setMensagem({
 
@@ -733,7 +679,6 @@ export default function EditarUsuario() {
                 return;
             }
 
-
             setMensagem({
 
                 informacao:
@@ -746,7 +691,6 @@ export default function EditarUsuario() {
         }
     };
 
-
     // ==================================================
     // VOLTAR
     // ==================================================
@@ -757,7 +701,6 @@ export default function EditarUsuario() {
 
     };
 
-
     // ==================================================
     // SALVAR
     // ==================================================
@@ -766,9 +709,7 @@ export default function EditarUsuario() {
 
         e.preventDefault();
 
-
         setMensagem(null);
-
 
         if (!idUsuario) {
 
@@ -784,7 +725,6 @@ export default function EditarUsuario() {
 
             return;
         }
-
 
         if (
             senha.trim() &&
@@ -804,7 +744,6 @@ export default function EditarUsuario() {
             return;
         }
 
-
         if (
             !nome.trim()
         ) {
@@ -821,7 +760,6 @@ export default function EditarUsuario() {
 
             return;
         }
-
 
         if (
             !email.trim()
@@ -840,21 +778,17 @@ export default function EditarUsuario() {
             return;
         }
 
-
         setCarregando(true);
-
 
         try {
 
             const formData =
                 new FormData();
 
-
             formData.append(
                 'nome',
                 nome.trim()
             );
-
 
             const telefoneNumeros =
                 String(
@@ -864,12 +798,10 @@ export default function EditarUsuario() {
                     ''
                 );
 
-
             formData.append(
                 'telefone',
                 telefoneNumeros
             );
-
 
             formData.append(
                 'email',
@@ -881,7 +813,6 @@ export default function EditarUsuario() {
                     )
             );
 
-
             if (
                 senha.trim()
             ) {
@@ -891,7 +822,6 @@ export default function EditarUsuario() {
                     senha
                 );
             }
-
 
             if (
                 arquivoImagem
@@ -903,16 +833,14 @@ export default function EditarUsuario() {
                 );
             }
 
-
             const dados =
                 await apiFetch(
-                    `/editar-usuario/${idUsuario}`,
+                    `/editar_usuario/${idUsuario}`,
                     {
                         method: 'PUT',
                         body: formData
                     }
                 );
-
 
             if (
                 dados?.usuario
@@ -924,7 +852,6 @@ export default function EditarUsuario() {
                             'usuario'
                         )
                     ) || {};
-
 
                 const usuarioAtualizado = {
 
@@ -960,7 +887,6 @@ export default function EditarUsuario() {
                         null
                 };
 
-
                 localStorage.setItem(
                     'usuario',
                     JSON.stringify(
@@ -968,13 +894,11 @@ export default function EditarUsuario() {
                     )
                 );
 
-
                 window.dispatchEvent(
                     new Event(
                         'loginAlterado'
                     )
                 );
-
 
                 setIdUsuario(
                     usuarioAtualizado.id_usuario
@@ -997,7 +921,6 @@ export default function EditarUsuario() {
                     )
                 );
 
-
                 if (
                     usuarioAtualizado.foto_perfil
                 ) {
@@ -1015,11 +938,9 @@ export default function EditarUsuario() {
                 }
             }
 
-
             setSenha('');
             setConfirmarSenha('');
             setArquivoImagem(null);
-
 
             setMensagem(
                 dados?.mensagem || {
@@ -1046,7 +967,6 @@ export default function EditarUsuario() {
                 error
             );
 
-
             if (
                 error.status === 401
             ) {
@@ -1063,7 +983,6 @@ export default function EditarUsuario() {
 
                 return;
             }
-
 
             if (
                 error.status === 403
@@ -1082,7 +1001,6 @@ export default function EditarUsuario() {
                 return;
             }
 
-
             setMensagem({
 
                 informacao:
@@ -1099,7 +1017,6 @@ export default function EditarUsuario() {
         }
     };
 
-
     if (
         verificandoLogin
     ) {
@@ -1107,7 +1024,6 @@ export default function EditarUsuario() {
         return null;
 
     }
-
 
     return (
 
@@ -1119,7 +1035,6 @@ export default function EditarUsuario() {
                     setMensagem(null)
                 }
             />
-
 
             {/* ==================================================
                 FOTO
@@ -1156,7 +1071,6 @@ export default function EditarUsuario() {
 
                     </div>
 
-
                     <div
                         className={styles.acoesFoto}
                     >
@@ -1179,7 +1093,6 @@ export default function EditarUsuario() {
 
                         </label>
 
-
                         <button
                             id="btn-remover-foto"
                             type="button"
@@ -1200,7 +1113,6 @@ export default function EditarUsuario() {
 
                 </div>
 
-
                 {/* ==================================================
                     FORMULÁRIO
                 ================================================== */}
@@ -1214,7 +1126,6 @@ export default function EditarUsuario() {
                     <h1>
                         EDITAR SUAS INFORMAÇÕES
                     </h1>
-
 
                     <form
                         onSubmit={salvar}
@@ -1246,7 +1157,6 @@ export default function EditarUsuario() {
 
                         </div>
 
-
                         {/* TELEFONE */}
 
                         <div
@@ -1271,7 +1181,6 @@ export default function EditarUsuario() {
                             />
 
                         </div>
-
 
                         {/* EMAIL */}
 
@@ -1299,7 +1208,6 @@ export default function EditarUsuario() {
 
                         </div>
 
-
                         {/* SENHA */}
 
                         <div
@@ -1325,7 +1233,6 @@ export default function EditarUsuario() {
                             />
 
                         </div>
-
 
                         {/* CONFIRMAR SENHA */}
 
@@ -1353,7 +1260,6 @@ export default function EditarUsuario() {
 
                         </div>
 
-
                         {/* AÇÕES DO FORMULÁRIO */}
 
                         <div
@@ -1373,7 +1279,6 @@ export default function EditarUsuario() {
                             >
                                 Voltar
                             </button>
-
 
                             <button
                                 id="btn-salvar"

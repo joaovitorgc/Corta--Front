@@ -11,7 +11,7 @@ export default function CadastroADM() {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [confirmarSenha, setConfirmarSenha] = useState('');
-    const [tipoUsuario, setTipoUsuario] = useState('adm');
+    const [tipoUsuario, setTipoUsuario] = useState('cliente');
     const [carregando, setCarregando] = useState(false);
     const [mensagem, setMensagem] = useState(null);
 
@@ -47,7 +47,7 @@ export default function CadastroADM() {
                     email: email.trim().replace(/\s/g, ''),
                     senha,
                     confirmarSenha,
-                    tipo: obterTipoNumeric(tipoUsuario),
+                    tipo: cadastroPorAdmin ? obterTipoNumeric(tipoUsuario) : 1,
                 }),
             });
 
@@ -78,7 +78,7 @@ export default function CadastroADM() {
             <main className={styles.containerConteudo}>
                 <section className={styles.areaFormulario}>
                     <div className={styles.cartaoCadastro}>
-                        <h1 className={styles.titulo}>CADASTRO</h1>
+                        <h1 className={styles.titulo}>{cadastroPorAdmin ? 'CADASTRAR CONTA' : 'CADASTRO'}</h1>
 
                         <form onSubmit={handleSubmit} className={styles.formulario}>
                             <div className={styles.grupoEntrada}>
@@ -146,44 +146,45 @@ export default function CadastroADM() {
                                 />
                             </div>
 
-                            {/* RADIOS */}
-                            <div className={styles.grupoTipoUsuario}>
-                                <label className={styles.opcaoRadio}>
-                                    <input
-                                        type="radio"
-                                        id="radio-adm"
-                                        name="tipoUsuario"
-                                        value="adm"
-                                        checked={tipoUsuario === 'adm'}
-                                        onChange={(e) => setTipoUsuario(e.target.value)}
-                                    />
-                                    <span>ADM</span>
-                                </label>
+                            {cadastroPorAdmin && (
+                                <div className={styles.grupoTipoUsuario}>
+                                    <label className={styles.opcaoRadio}>
+                                        <input
+                                            type="radio"
+                                            id="radio-adm"
+                                            name="tipoUsuario"
+                                            value="adm"
+                                            checked={tipoUsuario === 'adm'}
+                                            onChange={(e) => setTipoUsuario(e.target.value)}
+                                        />
+                                        <span>ADM</span>
+                                    </label>
 
-                                <label className={styles.opcaoRadio}>
-                                    <input
-                                        type="radio"
-                                        id="radio-cliente"
-                                        name="tipoUsuario"
-                                        value="cliente"
-                                        checked={tipoUsuario === 'cliente'}
-                                        onChange={(e) => setTipoUsuario(e.target.value)}
-                                    />
-                                    <span>Cliente</span>
-                                </label>
+                                    <label className={styles.opcaoRadio}>
+                                        <input
+                                            type="radio"
+                                            id="radio-cliente"
+                                            name="tipoUsuario"
+                                            value="cliente"
+                                            checked={tipoUsuario === 'cliente'}
+                                            onChange={(e) => setTipoUsuario(e.target.value)}
+                                        />
+                                        <span>Cliente</span>
+                                    </label>
 
-                                <label className={styles.opcaoRadio}>
-                                    <input
-                                        type="radio"
-                                        id="radio-barbearia"
-                                        name="tipoUsuario"
-                                        value="barbearia"
-                                        checked={tipoUsuario === 'barbearia'}
-                                        onChange={(e) => setTipoUsuario(e.target.value)}
-                                    />
-                                    <span>Barbearia</span>
-                                </label>
-                            </div>
+                                    <label className={styles.opcaoRadio}>
+                                        <input
+                                            type="radio"
+                                            id="radio-barbearia"
+                                            name="tipoUsuario"
+                                            value="barbearia"
+                                            checked={tipoUsuario === 'barbearia'}
+                                            onChange={(e) => setTipoUsuario(e.target.value)}
+                                        />
+                                        <span>Barbearia</span>
+                                    </label>
+                                </div>
+                            )}
 
                             {/* BOTOES */}
                             <button
@@ -213,39 +214,7 @@ export default function CadastroADM() {
                 <section className={styles.areaImagem}></section>
             </main>
 
-            {/* FOOTER */}
-            <footer className={styles.footer}>
-                <div className={styles.colunaBranding}>
-                    <div className={styles.logoFooter}>CORTAÊ</div>
-                    <p className={styles.sloganFooter}>
-                        Leve sua barbearia para o<br />Próximo <span>estágio.</span>
-                    </p>
-                </div>
 
-                <div className={styles.colunaLinks}>
-                    <h4>Acesso rápido</h4>
-                    <ul>
-                        <li>Início</li>
-                        <li>Encontrar estabelecimento</li>
-                        <li>Meus agendamentos</li>
-                    </ul>
-                </div>
-
-                <div className={styles.colunaLinks}>
-                    <h4>Mais</h4>
-                    <ul>
-                        <li>Sobre nós</li>
-                        <li>Trabalhe conosco</li>
-                    </ul>
-                </div>
-
-                <div className={styles.redesSociais}>
-                    <span className={styles.iconeRede}>FB</span>
-                    <span className={styles.iconeRede}>IG</span>
-                    <span className={styles.iconeRede}>YT</span>
-                    <span className={styles.iconeRede}>TW</span>
-                </div>
-            </footer>
         </div>
     );
 }

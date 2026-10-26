@@ -11,7 +11,7 @@ import styles from './PersonalizacaoBarbearia.module.css';
 
 const DIAS = [['segunda', 'Segunda'], ['terca', 'Terça'], ['quarta', 'Quarta'], ['quinta', 'Quinta'], ['sexta', 'Sexta'], ['sabado', 'Sábado'], ['domingo', 'Domingo']];
 const criarDias = () => DIAS.map(([chave, nome]) => ({ chave, nome, fechado: true, manhaInicio: '08:00', manhaFim: '12:00', tardeInicio: '14:00', tardeFim: '18:00' }));
-const novoFuncionario = () => ({ id: crypto.randomUUID(), nome: '', descricao: '', dias: [], servicos: [] });
+const novoFuncionario = () => ({ id: crypto.randomUUID(), nome: '', descricao: '', email: '', telefone: '', comissao_percentual: '0', dias: [], servicos: [] });
 const CORES_INICIAIS = { primaria: '#FF9C08', secundaria: '#000000', terciaria: '#FFFFFF', textoPrimario: '#000000', textoSecundario: '#FFFFFF' };
 const normalizarHora = (valor) => valor ? String(valor).slice(0, 5) : '';
 
@@ -22,6 +22,10 @@ export default function PersonalizacaoBarbearia({ modoEdicao = false }) {
     const sufixoUsuario = idUsuarioAlvo ? `?id_usuario=${encodeURIComponent(idUsuarioAlvo)}` : '';
     const [historia, setHistoria] = useState('');
     const [localizacao, setLocalizacao] = useState('');
+    const [cep, setCep] = useState('');
+    const [numero, setNumero] = useState('');
+    const [complemento, setComplemento] = useState('');
+    const [perfilExiste, setPerfilExiste] = useState(false);
     const [contatos, setContatos] = useState({ telefone: '', email: '', instagram: '' });
     const [cores, setCores] = useState(CORES_INICIAIS);
     const [dias, setDias] = useState(criarDias);
@@ -41,15 +45,24 @@ export default function PersonalizacaoBarbearia({ modoEdicao = false }) {
     useEffect(() => {
         async function carregar() {
             try {
-                const [dados, dadosServicos] = await Promise.all([apiFetch(`/barbearia/personalizacao${sufixoUsuario}`), apiFetch(`/barbearia/servicos${sufixoUsuario}`)]);
-                setServicos(dadosServicos.servicos || []);
-                if (!dados.personalizado) {
+                const dados = await apiFetch(`/barbearia/personalizacao${sufixoUsuario}`);
+                const temPerfil = Boolean(dados.personalizado || dados.personalizacao);
+                let dadosServicos = [];
+                if (temPerfil) {
+                    dadosServicos = await apiFetch(`/barbearia/servicos${sufixoUsuario}`);
+                }
+                setServicos(Array.isArray(dadosServicos) ? dadosServicos : (dadosServicos.servicos || []));
+                setPerfilExiste(temPerfil);
+                if (!temPerfil) {
                     if (modoEdicao) navigate('/personalizacaobarbearia', { replace: true });
                     return;
                 }
                 const personalizacao = dados.personalizacao;
                 setHistoria(personalizacao.historia || '');
-                setLocalizacao(personalizacao.localizacao || '');
+                setLocalizacao(personalizacao.localizacao || personalizacao.rua || '');
+                setCep(personalizacao.cep || '');
+                setNumero(personalizacao.numero || '');
+                setComplemento(personalizacao.complemento || '');
                 setCores({
                     primaria: personalizacao.cor_primaria || CORES_INICIAIS.primaria,
                     secundaria: personalizacao.cor_secundaria || CORES_INICIAIS.secundaria,
@@ -68,7 +81,7 @@ export default function PersonalizacaoBarbearia({ modoEdicao = false }) {
                     const salvo = diasDaApi.get(dia.chave);
                     return salvo ? { ...dia, fechado: false, manhaInicio: normalizarHora(salvo.entrada_manha), manhaFim: normalizarHora(salvo.saida_manha), tardeInicio: normalizarHora(salvo.entrada_tarde), tardeFim: normalizarHora(salvo.saida_tarde) } : dia;
                 }));
-                const equipe = (dados.funcionarios || []).map((funcionario) => ({ id: funcionario.id_funcionario, nome: funcionario.nome || '', descricao: funcionario.descricao || '', dias: (funcionario.dias || [funcionario.id_dias]).map((idDia) => diasComChave.find((dia) => dia.id_dia === idDia)?.chave).filter(Boolean), servicos: funcionario.servicos || [] }));
+                const equipe = (dados.funcionarios || []).map((funcionario) => ({ id: funcionario.id_funcionario, nome: funcionario.nome || '', descricao: funcionario.descricao || '', email: funcionario.email || '', telefone: funcionario.telefone || '', comissao_percentual: String(funcionario.comissao_percentual ?? 0), dias: (funcionario.dias || [funcionario.id_dias]).map((idDia) => diasComChave.find((dia) => dia.id_dia === idDia)?.chave).filter(Boolean), servicos: funcionario.servicos || [] }));
                 setFuncionarios(equipe.length ? equipe : [novoFuncionario()]);
                 if (!modoEdicao) navigate('/editarbarbearia', { replace: true });
             } catch (erro) {
@@ -83,42 +96,35 @@ export default function PersonalizacaoBarbearia({ modoEdicao = false }) {
     const alternarDiaFuncionario = (indice, chaveDia) => setFuncionarios((lista) => lista.map((funcionario, i) => i === indice ? { ...funcionario, dias: funcionario.dias.includes(chaveDia) ? funcionario.dias.filter((dia) => dia !== chaveDia) : [...funcionario.dias, chaveDia] } : funcionario));
 
     async function salvarServico(servico) {
+        if (!perfilExiste) {
+            setMensagem({ informacao: 'Salve primeiro o endereço e a personalização inicial. Depois, cadastre os serviços.', tipo: 'aviso' });
+            return;
+        }
         try {
             const editando = Boolean(servicoEditando);
             const endpoint = editando
                 ? `/barbearia/servicos/${servicoEditando.id_servico}${sufixoUsuario}`
                 : `/barbearia/servicos${sufixoUsuario}`;
 
-            const resposta = await apiFetch(
-                endpoint,
-                {
-                    method: editando ? 'PUT' : 'POST',
-                    body: JSON.stringify(servico)
-                }
-            );
-
-            if (editando) {
-                setServicos((lista) => lista.map((item) =>
-                    item.id_servico === servicoEditando.id_servico
-                        ? resposta.servico
-                        : item
-                ));
-            } else {
-                setServicos((lista) => [...lista, resposta.servico]);
-            }
-
+            const resposta = await apiFetch(endpoint, {
+                method: editando ? 'PUT' : 'POST',
+                body: JSON.stringify(servico)
+            });
+            const listaAtualizada = await apiFetch(`/barbearia/servicos${sufixoUsuario}`);
+            setServicos(Array.isArray(listaAtualizada) ? listaAtualizada : (listaAtualizada.servicos || []));
             setServicoEditando(null);
             setModalAberto(false);
-            setMensagem(resposta.mensagem);
+            setMensagem(resposta?.mensagem || { informacao: editando ? 'Serviço atualizado.' : 'Serviço cadastrado.', tipo: 'sucesso' });
         } catch (erro) {
-            setMensagem({
-                informacao: mensagemDaApi(erro),
-                tipo: 'erro'
-            });
+            setMensagem({ informacao: mensagemDaApi(erro), tipo: 'erro' });
         }
     }
 
     function abrirAdicionarServico() {
+        if (!perfilExiste) {
+            setMensagem({ informacao: 'Salve primeiro a personalização inicial para criar a barbearia. Depois, você poderá cadastrar serviços.', tipo: 'aviso' });
+            return;
+        }
         setServicoEditando(null);
         setModalAberto(true);
     }
@@ -141,7 +147,7 @@ export default function PersonalizacaoBarbearia({ modoEdicao = false }) {
     function montarFormulario() {
         const formulario = new FormData();
         if (idUsuarioAlvo) formulario.append('id_usuario', idUsuarioAlvo);
-        [['cor_primaria', cores.primaria], ['cor_secundaria', cores.secundaria], ['cor_terciaria', cores.terciaria], ['cor_texto_primario', cores.textoPrimario], ['cor_texto_secundario', cores.textoSecundario], ['historia', historia.trim()], ['localizacao', localizacao.trim()], ['contato_telefone', contatos.telefone.trim()], ['contato_email', contatos.email.trim()], ['instagram', contatos.instagram.trim()]].forEach(([campo, valor]) => formulario.append(campo, valor));
+        [['cor_primaria', cores.primaria], ['cor_secundaria', cores.secundaria], ['cor_terciaria', cores.terciaria], ['cor_texto_primario', cores.textoPrimario], ['cor_texto_secundario', cores.textoSecundario], ['historia', historia.trim()], ['localizacao', localizacao.trim()], ['rua', localizacao.trim()], ['cep', cep.replace(/\D/g, '')], ['numero', numero.trim()], ['complemento', complemento.trim()], ['contato_telefone', contatos.telefone.trim()], ['telefone', contatos.telefone.trim()], ['contato_email', contatos.email.trim()], ['instagram', contatos.instagram.trim()]].forEach(([campo, valor]) => formulario.append(campo, valor));
         dias.forEach((dia) => {
             if (!dia.fechado) [['entrada_manha', dia.manhaInicio], ['saida_manha', dia.manhaFim], ['entrada_tarde', dia.tardeInicio], ['saida_tarde', dia.tardeFim]].forEach(([campo, valor]) => formulario.append(`${dia.chave}_${campo}`, valor));
         });
@@ -150,6 +156,9 @@ export default function PersonalizacaoBarbearia({ modoEdicao = false }) {
         equipe.forEach((funcionario, indice) => {
             formulario.append(`funcionarios[${indice}][nome]`, funcionario.nome.trim());
             formulario.append(`funcionarios[${indice}][descricao]`, funcionario.descricao.trim());
+            formulario.append(`funcionarios[${indice}][email]`, funcionario.email.trim());
+            formulario.append(`funcionarios[${indice}][telefone]`, funcionario.telefone.replace(/\D/g, ''));
+            formulario.append(`funcionarios[${indice}][comissao_percentual]`, funcionario.comissao_percentual || '0');
             formulario.append(`funcionarios[${indice}][dias]`, funcionario.dias.join(','));
             formulario.append(`funcionarios[${indice}][servicos]`, funcionario.servicos.join(','));
         });
@@ -161,12 +170,15 @@ export default function PersonalizacaoBarbearia({ modoEdicao = false }) {
     async function salvar(evento) {
         evento.preventDefault();
         if (!diasAbertos.length) return setMensagem({ informacao: 'Informe ao menos um dia de atendimento.', tipo: 'erro' });
+        if (!modoEdicao && !perfilExiste && cep.replace(/\D/g, '').length !== 8) return setMensagem({ informacao: 'Informe um CEP válido com oito dígitos.', tipo: 'erro' });
         if (funcionarios.some((funcionario) => funcionario.nome.trim() && !funcionario.dias.length)) return setMensagem({ informacao: 'Vincule pelo menos um dia de serviço para cada funcionário.', tipo: 'erro' });
+        if (funcionarios.some((funcionario) => funcionario.nome.trim() && (!funcionario.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(funcionario.email.trim()) || ![10, 11].includes(funcionario.telefone.replace(/\D/g, '').length)))) return setMensagem({ informacao: 'Informe e-mail e telefone válidos para cada funcionário.', tipo: 'erro' });
         setSalvando(true);
         try {
-            const resposta = await apiFetch('/barbearia/personalizacao', { method: modoEdicao ? 'PUT' : 'POST', body: montarFormulario() });
-            setMensagem(resposta.mensagem);
-            navigate(idUsuarioAlvo ? `/estabelecimento?usuario=${idUsuarioAlvo}` : '/estabelecimento', { replace: true });
+            const resposta = await apiFetch('/barbearia/personalizacao', { method: modoEdicao || perfilExiste ? 'PUT' : 'POST', body: montarFormulario() });
+            setPerfilExiste(true);
+            setMensagem(resposta.mensagem || { informacao: 'Personalização salva com sucesso.', tipo: 'sucesso' });
+            navigate(idUsuarioAlvo ? `/editarbarbearia?usuario=${encodeURIComponent(idUsuarioAlvo)}` : '/editarbarbearia', { replace: true });
         } catch (erro) { setMensagem({ informacao: mensagemDaApi(erro), tipo: 'erro' }); } finally { setSalvando(false); }
     }
 
@@ -175,19 +187,22 @@ export default function PersonalizacaoBarbearia({ modoEdicao = false }) {
         <form className={styles.container} onSubmit={salvar}>
             <div className={`${styles.span2} ${styles.cabecalhoPagina}`}><p className={styles.eyebrow}>{modoEdicao ? 'GESTÃO DO ESTABELECIMENTO' : 'PRIMEIROS PASSOS'}</p><h1 className={styles.titulo}>{modoEdicao ? 'Editar barbearia' : 'Personalize sua barbearia'}</h1><p className={styles.subtitulo}>Organize sua vitrine, equipe, serviços, horários e identidade visual em um só lugar.</p><div /></div>
             {carregando ? <p className={styles.carregando}>Carregando dados da barbearia…</p> : <>
-                <section className={`${styles.section} ${styles.span2}`}><div className={styles.sectionHead}><span className={styles.dot}><Scissors size={16} /></span>Serviços disponíveis</div><div className={styles.tags}>{servicos.map((servico) => <span className={styles.tag} key={servico.id_servico}><span>{servico.nome}</span><span className={styles.acoesServico}><button type="button" onClick={() => abrirEditarServico(servico)} aria-label={`Editar ${servico.nome}`}><Pencil size={13} /></button><button type="button" onClick={() => removerServico(servico)} aria-label={`Remover ${servico.nome}`}><Trash2 size={13} /></button></span></span>)}<button type="button" className={styles.tagAdd} onClick={abrirAdicionarServico}><Plus size={13} />Adicionar serviço</button></div></section>
+                <section className={`${styles.section} ${styles.span2}`}><div className={styles.sectionHead}><span className={styles.dot}><Scissors size={16} /></span>Serviços disponíveis</div><div className={styles.tags}>{servicos.map((servico) => <span className={styles.tag} key={servico.id_servico}><span>{servico.nome}</span><span className={styles.acoesServico}><button type="button" onClick={() => abrirEditarServico(servico)} aria-label={`Editar ${servico.nome}`}><Pencil size={13} /></button><button type="button" onClick={() => removerServico(servico)} aria-label={`Remover ${servico.nome}`}><Trash2 size={13} /></button></span></span>)}<button type="button" className={styles.tagAdd} onClick={abrirAdicionarServico} disabled={!perfilExiste}><Plus size={13} />Adicionar serviço</button></div>{!perfilExiste && <small>Salve a personalização inicial para liberar o cadastro de serviços.</small>}</section>
                 <section className={`${styles.section} ${styles.span2}`}><TabelaHorarios dias={dias} onToggleDia={(nome) => setDias((lista) => lista.map((dia) => dia.nome === nome ? { ...dia, fechado: !dia.fechado } : dia))} onChangeHorario={(nome, campo, valor) => setDias((lista) => lista.map((dia) => dia.nome === nome ? { ...dia, [campo]: valor } : dia))} /></section>
                 <section className={styles.section}><div className={styles.sectionHead}><span className={styles.dot}><Users size={16} /></span>Equipe</div>
                     {funcionarios.map((funcionario, indice) => <div className={styles.funcionario} key={funcionario.id}>
                         <div className={styles.funcionarioCabecalho}><strong>Funcionário {indice + 1}</strong>{funcionarios.length > 1 && <button type="button" onClick={() => setFuncionarios((lista) => lista.filter((_, i) => i !== indice))}><Trash2 size={15} /> Remover</button>}</div>
                         <label className={styles.label}>Nome<MaskedInput className={styles.input} mask={/^[A-Za-zÀ-ÿ ]*$/} value={funcionario.nome} onAccept={(valor) => atualizarFuncionario(indice, 'nome', valor)} /></label>
                         <label className={styles.label}>Descrição / especialidade<MaskedInput className={styles.input} value={funcionario.descricao} onAccept={(valor) => atualizarFuncionario(indice, 'descricao', valor)} placeholder="Ex.: Barbeiro especialista" /></label>
+                        <label className={styles.label}>E-mail do funcionário<MaskedInput className={styles.input} type="email" mask={/^[\w.+-@]*$/} value={funcionario.email} onAccept={(valor) => atualizarFuncionario(indice, 'email', valor)} placeholder="profissional@email.com" /></label>
+                        <label className={styles.label}>Telefone do funcionário<MaskedInput className={styles.input} mask="(00) 0000[0]-0000" value={funcionario.telefone} onAccept={(valor) => atualizarFuncionario(indice, 'telefone', valor)} placeholder="(00) 00000-0000" /></label>
+                        <label className={styles.label}>Comissão (%)<MaskedInput className={styles.input} value={funcionario.comissao_percentual} onAccept={(valor) => atualizarFuncionario(indice, 'comissao_percentual', valor)} /></label>
                         <span className={styles.label}>Dias de serviço vinculados</span><div className={styles.checks}>{diasAbertos.map((dia) => <label key={dia.chave} className={styles.check}><input type="checkbox" checked={funcionario.dias.includes(dia.chave)} onChange={() => alternarDiaFuncionario(indice, dia.chave)} />{dia.nome}</label>)}</div>
                         <span className={styles.label}>Serviços que realiza</span><div className={styles.checks}>{servicos.length ? servicos.map((servico) => <label key={servico.id_servico} className={styles.check}><input type="checkbox" checked={funcionario.servicos.includes(servico.id_servico)} onChange={() => alternarServicoFuncionario(indice, servico.id_servico)} />{servico.nome}</label>) : <small>Cadastre serviços abaixo para vinculá-los.</small>}</div>
                     </div>)}
                     <button type="button" className={styles.secundario} onClick={() => setFuncionarios((lista) => [...lista, novoFuncionario()])}><Plus size={16} /> Adicionar funcionário</button>
                 </section>
-                <section className={styles.section}><div className={styles.sectionHead}><span className={styles.dot}><Scissors size={16} /></span>História da empresa</div><label className={styles.label}>Conte sua história<textarea className={styles.textarea} value={historia} onChange={(e) => setHistoria(e.target.value)} /></label><label className={styles.label}>Localização<MaskedInput className={styles.input} value={localizacao} onAccept={setLocalizacao} placeholder="Rua, número, bairro e cidade" /></label></section>
+                <section className={styles.section}><div className={styles.sectionHead}><span className={styles.dot}><Scissors size={16} /></span>História e endereço</div><label className={styles.label}>Conte sua história<textarea className={styles.textarea} value={historia} onChange={(e) => setHistoria(e.target.value)} /></label><label className={styles.label}>CEP<MaskedInput className={styles.input} mask="00000-000" value={cep} onAccept={setCep} placeholder="00000-000" required={!modoEdicao} /></label><label className={styles.label}>Rua / logradouro<MaskedInput className={styles.input} value={localizacao} onAccept={setLocalizacao} placeholder="Rua ou avenida" required={!modoEdicao} /></label><label className={styles.label}>Número<MaskedInput className={styles.input} value={numero} onAccept={setNumero} placeholder="Número" required={!modoEdicao} /></label><label className={styles.label}>Complemento<MaskedInput className={styles.input} value={complemento} onAccept={setComplemento} placeholder="Apartamento, sala etc. (opcional)" /></label></section>
                 <section className={styles.section}><div className={styles.sectionHead}><span className={styles.dot}><ImageIcon size={16} /></span>Contatos da barbearia</div><label className={styles.label}>Telefone / WhatsApp<MaskedInput className={styles.input} mask="(00) 0000[0]-0000" value={contatos.telefone} onAccept={(telefone) => setContatos({ ...contatos, telefone })} placeholder="(00) 00000-0000" /></label><label className={styles.label}>E-mail de contato<MaskedInput className={styles.input} mask={/^[\w.+-@]*$/} type="email" value={contatos.email} onAccept={(email) => setContatos({ ...contatos, email })} placeholder="contato@barbearia.com" /></label><label className={styles.label}>Instagram<MaskedInput className={styles.input} mask={/^@?[A-Za-z0-9._]*$/} value={contatos.instagram} onAccept={(instagram) => setContatos({ ...contatos, instagram })} placeholder="@sua_barbearia" /></label></section>
                 <section className={`${styles.section} ${styles.sectionHead}`}><SeletorIdentidadeVisual value={cores} onChange={setCores} /></section>
                 <section className={`${styles.section} ${styles.span2}`}><div className={styles.sectionHead}><span className={styles.dot}><ImageIcon size={16} /></span>Imagens da empresa</div><div className={styles.row2}><label className={styles.upload}><Upload size={18} />{logo ? 'Trocar logo' : 'Upload do logo'}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => { const arquivo = e.target.files?.[0] || null; setLogo(arquivo); setPreviewLogo(arquivo ? URL.createObjectURL(arquivo) : null); }} /></label><label className={styles.upload}><Upload size={18} />Adicionar fotos<input type="file" multiple accept="image/png,image/jpeg,image/webp" onChange={(e) => { const arquivos = Array.from(e.target.files || []).slice(0, 5); setFotos(arquivos); setPreviewsFotos(arquivos.map((arquivo) => URL.createObjectURL(arquivo))); }} /></label></div>{(previewLogo || previewsFotos.length > 0) && <div className={styles.previews}>{previewLogo && <figure className={styles.previewLogo}><img src={previewLogo} alt="Prévia do logo" /><figcaption>Logo</figcaption></figure>}{previewsFotos.map((url, indice) => <figure className={styles.previewFoto} key={url}><img src={url} alt={`Prévia da foto ${indice + 1}`} /><figcaption>Foto {indice + 1}</figcaption></figure>)}</div>}</section>
