@@ -21,6 +21,30 @@ function normalizarBarbearia(item) {
     };
 }
 
+function abreviarDias(dias) {
+    if (!dias) return '';
+
+    const abreviacoes = {
+        segunda: 'SEG',
+        terça: 'TER',
+        terca: 'TER',
+        quarta: 'QUA',
+        quinta: 'QUI',
+        sexta: 'SEX',
+        sábado: 'SAB',
+        sabado: 'SAB',
+        domingo: 'DOM'
+    };
+
+    return dias
+        .split(/[,;]+/)
+        .map((dia) => {
+            const nome = dia.trim().toLowerCase();
+            return abreviacoes[nome] || dia.trim().toUpperCase();
+        })
+        .join(', ');
+}
+
 // Evita "//" quando API_URL termina com barra e o caminho começa com barra.
 function montarUrlImagem(caminho) {
     if (!caminho) return null;
@@ -112,7 +136,9 @@ export default function Barbearias() {
                                 >
                                     <div className={styles.cardOverlay}>
                                         {barbearia.dias && (
-                                            <span className={styles.badgeDias}>{barbearia.dias}</span>
+                                            <span className={styles.badgeDias}>
+                                                {abreviarDias(barbearia.dias)}
+                                            </span>
                                         )}
 
                                         <div className={styles.cardConteudo}>
@@ -121,13 +147,6 @@ export default function Barbearias() {
                                             <div className={styles.infoLinha}>
                                                 <LuMapPin className={styles.infoIcone} size={14} />
                                                 <span>{barbearia.endereco || 'Endereço não informado'}</span>
-                                            </div>
-
-                                            <div className={styles.infoLinha}>
-                                                <LuClock className={styles.infoIcone} size={14} />
-                                                <span>
-                                                    Horário de Atendimento: {barbearia.horario || 'Não informado'}
-                                                </span>
                                             </div>
 
                                             <button
