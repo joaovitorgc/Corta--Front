@@ -1,6 +1,5 @@
-
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     FiMapPin,
     FiClock,
@@ -16,6 +15,7 @@ import CarrosselImagens from '../../components/CarrosselImagens/CarrosselImagens
 import { API_URL, apiFetch, mensagemDaApi } from '../../services/api';
 
 export default function Estabelecimento() {
+    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const idUsuarioAlvo = searchParams.get('usuario');
 
@@ -231,7 +231,7 @@ export default function Estabelecimento() {
             ? `/agendamento?usuario=${encodeURIComponent(idUsuarioAlvo)}`
             : '/agendamento';
 
-        window.location.href = destino;
+        navigate(destino);
     };
 
     return (

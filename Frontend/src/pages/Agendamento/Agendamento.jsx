@@ -2,13 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import styles from "./Agendamento.module.css";
 import MensagemCard from "../../components/MensagemCard/MensagemCard.jsx";
+import { API_URL } from "../../services/api";
 
 /* ============================================================
    CONFIGURAÇÃO — ajuste aqui se o seu projeto for diferente
    ============================================================ */
-
-// URL base do Flask. Em Vite: defina VITE_API_URL no .env
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
 // Chave do localStorage onde o login guarda o token (se usar Bearer).
 // Se a sessão for por cookie, pode ignorar: o fetch já envia cookies.
@@ -17,11 +15,28 @@ const CHAVE_TOKEN = "token";
 // Nome do campo que ids_servicos_da_requisicao() (funcoes.py) lê.
 const CHAVE_SERVICOS = "ids_servicos";
 
-// Nome do campo que confirmar_resumo() (funcoes.py) lê em /criar_agendamento.
-const CHAVE_RESUMO = "resumo";
+// Campo que confirmar_resumo() (funcoes.py) lê em /criar_agendamento:
+// o hash HMAC devolvido em resumo.confirmacao_resumo por /resumo_agendamento.
+const CHAVE_RESUMO = "confirmacao_resumo";
 
 const DIAS_AGENDAVEIS = 30; // quantos dias à frente o cliente pode escolher
 const DIAS_VISIVEIS = 7; // quantos cards de dia aparecem de uma vez
+
+// Para onde enviar o cliente quando o backend responder 401 (sem sessão).
+const ROTA_LOGIN = "/login";
+
+// Rota da página de visagismo (confira se é a mesma registrada no seu router).
+const ROTA_VISAGISMO = "/visagismo";
+
+// Serviços de pintura exigem a cor do cabelo no agendamento.
+const SERVICO_PINTURA = /pintur|color/i;
+const eServicoPintura = (servico) =>
+    SERVICO_PINTURA.test(`${servico?.nome ?? ""} ${servico?.tipo ?? ""}`);
+
+const valorCor = (cor) =>
+    typeof cor === "string" ? cor : cor?.hex || cor?.cor || cor?.nome || "";
+const nomeCor = (cor) =>
+    typeof cor === "string" ? cor : cor?.nome || cor?.cor || cor?.hex || "";
 
 const ERRO_REDE =
     "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.";
@@ -117,7 +132,8 @@ async function requisitar(caminho, { metodo = "GET", corpo, params, signal } = {
         }
     });
 
-    const url = `${API_URL}${caminho}${query.size ? `?${query}` : ""}`;
+    const textoQuery = query.toString();
+    const url = `${API_URL}${caminho}${textoQuery ? `?${textoQuery}` : ""}`;
 
     const headers = { Accept: "application/json" };
     if (corpo) headers["Content-Type"] = "application/json";
@@ -158,7 +174,9 @@ function paraMensagem(dados, ok, padrao) {
 /* ============================================================
    PARÂMETROS DA PÁGINA (barbearia, serviços, profissional...)
    Vêm da tela anterior via navigate(..., { state }) ou pela URL:
-   /agendamento?barbearia=3&servicos=1,4&funcionario=2
+   /agendamento?usuario=7  (como o Estabelecimento.jsx envia: id do
+   usuário dono; a barbearia é resolvida em /listar_barbearias_disponiveis)
+   /agendamento?barbearia=3&servicos=1,4&funcionario=2  (pré-seleção)
    ============================================================ */
 
 function useParametrosAgendamento() {
@@ -168,6 +186,9 @@ function useParametrosAgendamento() {
 
     const idBarbearia =
         Number(origem.idBarbearia ?? busca.get("barbearia")) || null;
+
+    const idUsuario =
+        Number(origem.idUsuario ?? busca.get("usuario")) || null;
 
     const idFuncionario =
         Number(origem.idFuncionario ?? busca.get("funcionario")) || null;
@@ -183,11 +204,14 @@ function useParametrosAgendamento() {
 
     return {
         idBarbearia,
+        idUsuario,
         idFuncionario,
         idsServicos,
         idCorte: origem.idCorte ?? busca.get("corte") ?? null,
         idVisagismo: origem.idVisagismo ?? busca.get("visagismo") ?? null,
         corCabelo: origem.corCabelo ?? busca.get("cor") ?? null,
+        // "horario" quando o cliente volta do visagismo
+        etapa: origem.etapa ?? null,
     };
 }
 
@@ -197,17 +221,47 @@ function useParametrosAgendamento() {
 
 function Agendamento({ aoAgendar }) {
     const navigate = useNavigate();
+    const { pathname, search } = useLocation();
 
     const {
-        idBarbearia,
-        idFuncionario,
-        idsServicos,
-        idCorte,
-        idVisagismo,
-        corCabelo,
+        idBarbearia: idBarbeariaParam,
+        idUsuario,
+        idFuncionario: idFuncionarioInicial,
+        idsServicos: idsServicosIniciais,
+        idCorte: idCorteInicial,
+        idVisagismo: idVisagismoInicial,
+        corCabelo: corCabeloInicial,
+        etapa: etapaInicial,
     } = useParametrosAgendamento();
 
-    const chaveServicos = idsServicos.join(",");
+    // Etapas: "servicos" -> (visagismo ou pular) -> "horario"
+    const [etapa, setEtapa] = useState(
+        etapaInicial === "horario" && idsServicosIniciais.length > 0
+            ? "horario"
+            : "servicos"
+    );
+
+    // Resultado do visagismo (vem do state quando o cliente retorna dele)
+    const [idCorte, setIdCorte] = useState(idCorteInicial);
+    const [idVisagismo, setIdVisagismo] = useState(idVisagismoInicial);
+    const [corCabelo, setCorCabelo] = useState(corCabeloInicial);
+    const [coresCabelo, setCoresCabelo] = useState([]);
+
+    // Barbearia: vem pronta (state/URL) ou é resolvida a partir do dono (?usuario=)
+    const [idBarbearia, setIdBarbearia] = useState(idBarbeariaParam);
+    const [resolvendoBarbearia, setResolvendoBarbearia] = useState(
+        !idBarbeariaParam && Boolean(idUsuario)
+    );
+    const [falhaBarbearia, setFalhaBarbearia] = useState(null);
+
+    // Catálogo da barbearia e escolhas do cliente
+    const [catalogoServicos, setCatalogoServicos] = useState([]);
+    const [profissionais, setProfissionais] = useState([]);
+    const [catalogoCarregado, setCatalogoCarregado] = useState(false);
+    const [idsServicos, setIdsServicos] = useState(idsServicosIniciais);
+    const [idFuncionario, setIdFuncionario] = useState(idFuncionarioInicial);
+
+    const chaveServicos = [...idsServicos].sort((a, b) => a - b).join(",");
     const parametrosValidos = Boolean(idBarbearia) && idsServicos.length > 0;
 
     const dias = useMemo(gerarDias, []);
@@ -249,27 +303,244 @@ function Agendamento({ aoAgendar }) {
         []
     );
 
-    /* ---------- barbearia/serviços ausentes ---------- */
+    const irParaLogin = useCallback(() => navigate(ROTA_LOGIN), [navigate]);
+
+    // Mudar os serviços invalida o visagismo já feito (o catálogo de cortes depende deles)
+    const limparVisagismo = () => {
+        setIdVisagismo(null);
+        setIdCorte(null);
+        setCorCabelo(null);
+    };
+
+    const alternarServico = (id) => {
+        limparVisagismo();
+        setIdsServicos((atuais) =>
+            atuais.includes(id)
+                ? atuais.filter((outro) => outro !== id)
+                : [...atuais, id]
+        );
+    };
+
+    const temPintura = catalogoServicos.some(
+        (servico) =>
+            idsServicos.includes(Number(servico.id_servico)) &&
+            eServicoPintura(servico)
+    );
+
+    const irParaVisagismo = () => {
+        if (!parametrosValidos) return;
+
+        navigate(ROTA_VISAGISMO, {
+            state: {
+                idBarbearia,
+                idUsuario,
+                idsServicos,
+                idFuncionario,
+                permitirColoracao: temPintura,
+                retorno: `${pathname}${search}`,
+            },
+        });
+    };
+
+    const pularVisagismo = () => {
+        if (!parametrosValidos) return;
+
+        limparVisagismo();
+        setEtapa("horario");
+    };
+
+    const voltarParaServicos = () => setEtapa("servicos");
+
+    /* ---------- GET /listar_barbearias_disponiveis (?usuario= -> barbearia) ---------- */
 
     useEffect(() => {
-        if (parametrosValidos) return;
+        if (idBarbeariaParam) {
+            setIdBarbearia(idBarbeariaParam);
+            setResolvendoBarbearia(false);
+            return;
+        }
+
+        if (!idUsuario) {
+            setResolvendoBarbearia(false);
+            return;
+        }
+
+        const controle = new AbortController();
+
+        setResolvendoBarbearia(true);
+        setFalhaBarbearia(null);
+
+        (async () => {
+            try {
+                const { ok, dados } = await requisitar(
+                    "/listar_barbearias_disponiveis",
+                    { signal: controle.signal }
+                );
+
+                if (!ok) {
+                    setFalhaBarbearia(
+                        paraMensagem(
+                            dados,
+                            false,
+                            "Não foi possível carregar a barbearia."
+                        )
+                    );
+                    return;
+                }
+
+                const encontrada = (Array.isArray(dados) ? dados : []).find(
+                    (item) => Number(item.id_usuario) === Number(idUsuario)
+                );
+
+                if (!encontrada?.id_barbearia) {
+                    setFalhaBarbearia({
+                        tipo: "erro",
+                        informacao: "Barbearia não encontrada ou indisponível.",
+                    });
+                    return;
+                }
+
+                setIdBarbearia(Number(encontrada.id_barbearia));
+            } catch (erro) {
+                if (erro.name === "AbortError") return;
+
+                setFalhaBarbearia({ tipo: "erro", informacao: ERRO_REDE });
+            } finally {
+                if (!controle.signal.aborted) setResolvendoBarbearia(false);
+            }
+        })();
+
+        return () => controle.abort();
+    }, [idBarbeariaParam, idUsuario]);
+
+    /* ---------- barbearia ausente / não encontrada ---------- */
+
+    useEffect(() => {
+        if (resolvendoBarbearia || idBarbearia) return;
 
         mostrarMensagem(
-            {
+            falhaBarbearia ?? {
                 tipo: "erro",
-                informacao:
-                    "Escolha a barbearia e os serviços antes de selecionar o horário.",
+                informacao: "Escolha a barbearia antes de selecionar o horário.",
             },
             () => navigate(-1)
         );
-    }, [parametrosValidos, mostrarMensagem, navigate]);
+    }, [
+        resolvendoBarbearia,
+        idBarbearia,
+        falhaBarbearia,
+        mostrarMensagem,
+        navigate,
+    ]);
+
+    /* ---------- GET /barbearia/servicos + /listar_funcionarios_barbearia ---------- */
+
+    useEffect(() => {
+        if (!idBarbearia) return;
+
+        const controle = new AbortController();
+
+        setCatalogoCarregado(false);
+
+        (async () => {
+            try {
+                const [respServicos, respEquipe] = await Promise.all([
+                    requisitar("/barbearia/servicos", {
+                        params: { id_barbearia: idBarbearia },
+                        signal: controle.signal,
+                    }),
+                    requisitar(`/listar_funcionarios_barbearia/${idBarbearia}`, {
+                        signal: controle.signal,
+                    }),
+                ]);
+
+                if (!respServicos.ok) {
+                    mostrarMensagem(
+                        paraMensagem(
+                            respServicos.dados,
+                            false,
+                            "Não foi possível carregar os serviços."
+                        )
+                    );
+                    return;
+                }
+
+                // O backend devolve também os serviços desativados (ativo: false)
+                const servicos = (
+                    Array.isArray(respServicos.dados) ? respServicos.dados : []
+                ).filter((servico) => servico.ativo !== false);
+
+                const equipe =
+                    respEquipe.ok && Array.isArray(respEquipe.dados)
+                        ? respEquipe.dados
+                        : [];
+
+                setCatalogoServicos(servicos);
+                setProfissionais(equipe);
+
+                // Descarta pré-seleções (state/URL) que não existem mais na loja
+                const idsValidos = new Set(
+                    servicos.map((servico) => Number(servico.id_servico))
+                );
+                setIdsServicos((atuais) =>
+                    atuais.filter((id) => idsValidos.has(id))
+                );
+                setIdFuncionario((atual) =>
+                    equipe.some((p) => Number(p.id_funcionario) === atual)
+                        ? atual
+                        : null
+                );
+            } catch (erro) {
+                if (erro.name === "AbortError") return;
+
+                mostrarMensagem({ tipo: "erro", informacao: ERRO_REDE });
+            } finally {
+                if (!controle.signal.aborted) setCatalogoCarregado(true);
+            }
+        })();
+
+        return () => controle.abort();
+    }, [idBarbearia, mostrarMensagem]);
+
+    /* ---------- GET /cores_cabelo_visagismo (só para serviços de pintura) ---------- */
+
+    useEffect(() => {
+        if (etapa !== "horario" || !temPintura || coresCabelo.length > 0) return;
+
+        const controle = new AbortController();
+
+        (async () => {
+            try {
+                const { ok, dados } = await requisitar("/cores_cabelo_visagismo", {
+                    signal: controle.signal,
+                });
+
+                if (ok && Array.isArray(dados?.opcoes)) {
+                    setCoresCabelo(dados.opcoes);
+                }
+            } catch (erro) {
+                if (erro.name === "AbortError") return;
+            }
+        })();
+
+        return () => controle.abort();
+    }, [etapa, temPintura, coresCabelo.length]);
 
     /* ---------- GET /listar_horarios_agendamento ---------- */
 
     const dataISO = diaAtual.iso;
 
+    // Só busca horários quando o cliente já está na etapa de horário
+    const buscarHorarios = parametrosValidos && etapa === "horario";
+
     useEffect(() => {
-        if (!parametrosValidos) return;
+        if (!buscarHorarios) {
+            setHorarios([]);
+            setDetalhes(null);
+            setHorarioSelecionado(null);
+            setCarregando(false);
+            return;
+        }
 
         const controle = new AbortController();
 
@@ -323,7 +594,7 @@ function Agendamento({ aoAgendar }) {
         // Trocar de dia rápido cancela a requisição anterior
         return () => controle.abort();
     }, [
-        parametrosValidos,
+        buscarHorarios,
         idBarbearia,
         chaveServicos,
         idFuncionario,
@@ -378,6 +649,14 @@ function Agendamento({ aoAgendar }) {
             return;
         }
 
+        if (temPintura && !corCabelo) {
+            mostrarMensagem({
+                tipo: "erro",
+                informacao: "Escolha a cor do cabelo para o serviço de pintura.",
+            });
+            return;
+        }
+
         setEnviando(true);
 
         const base = {
@@ -386,7 +665,7 @@ function Agendamento({ aoAgendar }) {
             id_funcionario: idFuncionario,
             id_corte: idCorte,
             id_visagismo: idVisagismo,
-            cor_cabelo: corCabelo,
+            cor_cabelo: temPintura ? corCabelo : null,
         };
 
         try {
@@ -402,7 +681,9 @@ function Agendamento({ aoAgendar }) {
                         resumo.dados,
                         false,
                         "Não foi possível conferir os valores do agendamento."
-                    )
+                    ),
+                    // 401 = sem sessão: leva o cliente ao login
+                    resumo.status === 401 ? irParaLogin : null
                 );
                 return;
             }
@@ -414,7 +695,7 @@ function Agendamento({ aoAgendar }) {
                     ...base,
                     data: dataISO,
                     horario: horarioSelecionado,
-                    [CHAVE_RESUMO]: resumo.dados?.resumo,
+                    [CHAVE_RESUMO]: resumo.dados?.resumo?.confirmacao_resumo,
                 },
             });
 
@@ -426,7 +707,12 @@ function Agendamento({ aoAgendar }) {
                         "Não foi possível concluir o agendamento."
                     ),
                     // 409 = horário tomado por outra pessoa: atualiza a grade
-                    criado.status === 409 ? recarregarHorarios : null
+                    // 401 = sessão expirada: leva o cliente ao login
+                    criado.status === 409
+                        ? recarregarHorarios
+                        : criado.status === 401
+                            ? irParaLogin
+                            : null
                 );
                 return;
             }
@@ -466,165 +752,348 @@ function Agendamento({ aoAgendar }) {
 
             {/* TÍTULO */}
             <section className={styles.agendamentoHeader}>
-                <h1>{tituloPeriodo(diasVisiveis)}</h1>
+                <h1>
+                    {etapa === "servicos"
+                        ? "Escolha seus serviços"
+                        : tituloPeriodo(diasVisiveis)}
+                </h1>
             </section>
 
 
-            {/* DIAS */}
-            <section className={styles.seletorDias}>
+            {/* SERVIÇOS E PROFISSIONAL */}
+            {idBarbearia && etapa === "servicos" && (
+                <section className={styles.escolhas}>
 
-                <button
-                    className={styles.navegacaoDia}
-                    onClick={voltarDia}
-                    disabled={diaSelecionado === 0}
-                    aria-label="Dia anterior"
-                >
-                    ‹
-                </button>
+                    <h2>Serviços</h2>
 
+                    {!catalogoCarregado ? (
+                        <p className={styles.estadoHorarios}>
+                            Carregando serviços...
+                        </p>
+                    ) : catalogoServicos.length === 0 ? (
+                        <p className={styles.estadoHorarios}>
+                            Nenhum serviço disponível nesta barbearia.
+                        </p>
+                    ) : (
+                        <div className={styles.listaServicos}>
 
-                <div className={styles.diasContainer}>
+                            {catalogoServicos.map((servico) => {
+                                const id = Number(servico.id_servico);
+                                const marcado = idsServicos.includes(id);
+                                const preco = formatarValor(servico.preco);
 
-                    {diasVisiveis.map((dia, i) => {
-                        const index = inicioJanela + i;
+                                return (
+                                    <button
+                                        key={id}
+                                        type="button"
+                                        aria-pressed={marcado}
+                                        className={cx(
+                                            styles.servicoOpcao,
+                                            marcado && styles.servicoAtivo
+                                        )}
+                                        onClick={() => alternarServico(id)}
+                                    >
+                                        <span className={styles.servicoNome}>
+                                            {servico.nome}
+                                        </span>
 
-                        return (
-                            <button
-                                key={dia.iso}
-                                className={cx(
-                                    styles.diaCard,
-                                    diaSelecionado === index && styles.diaAtivo
-                                )}
-                                onClick={() => selecionarDia(index)}
+                                        <span className={styles.servicoInfo}>
+                                            {servico.duracao
+                                                ? `${servico.duracao} min`
+                                                : null}
+                                            {servico.duracao && preco
+                                                ? " · "
+                                                : null}
+                                            {preco}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+
+                        </div>
+                    )}
+
+                    {profissionais.length > 0 && (
+                        <label className={styles.seletorProfissional}>
+                            <span>Profissional</span>
+
+                            <select
+                                value={idFuncionario ?? ""}
+                                onChange={(e) =>
+                                    setIdFuncionario(
+                                        Number(e.target.value) || null
+                                    )
+                                }
                             >
+                                <option value="">Qualquer profissional</option>
+
+                                {profissionais.map((p) => (
+                                    <option
+                                        key={p.id_funcionario}
+                                        value={p.id_funcionario}
+                                    >
+                                        {p.nome}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                    )}
+
+                    {/* VISAGISMO COM IA OU PULAR */}
+                    {catalogoCarregado && catalogoServicos.length > 0 && (
+                        <div
+                            style={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: "12px",
+                                marginTop: "8px",
+                            }}
+                        >
+                            <button
+                                type="button"
+                                className={styles.btnConfirmar}
+                                style={{ margin: 0 }}
+                                disabled={!parametrosValidos}
+                                onClick={irParaVisagismo}
+                            >
+                                FAZER VISAGISMO COM IA
+                            </button>
+
+                            <button
+                                type="button"
+                                className={styles.btnConfirmar}
+                                style={{
+                                    margin: 0,
+                                    background: "transparent",
+                                    color: "inherit",
+                                    border: "1px solid rgba(128, 128, 128, 0.5)",
+                                }}
+                                disabled={!parametrosValidos}
+                                onClick={pularVisagismo}
+                            >
+                                PULAR E ESCOLHER HORÁRIO
+                            </button>
+                        </div>
+                    )}
+
+                    {!parametrosValidos && catalogoCarregado && (
+                        <p className={styles.estadoHorarios}>
+                            Selecione ao menos um serviço para continuar.
+                        </p>
+                    )}
+
+                </section>
+            )}
+
+
+            {etapa === "horario" && (
+                <>
+
+                    {/* RESUMO DA ESCOLHA */}
+                    <section
+                        className={styles.escolhas}
+                        style={{ maxWidth: "730px", margin: "0 auto 24px" }}
+                    >
+                        <p className={styles.servicoInfo}>
+                            {catalogoServicos
+                                .filter((s) => idsServicos.includes(Number(s.id_servico)))
+                                .map((s) => s.nome)
+                                .join(", ")}
+                            {idVisagismo ? " · visagismo aplicado" : ""}
+                        </p>
+
+                        {temPintura && (
+                            <label className={styles.seletorProfissional}>
+                                <span>Cor do cabelo</span>
+
+                                <select
+                                    value={corCabelo ?? ""}
+                                    onChange={(e) => setCorCabelo(e.target.value || null)}
+                                >
+                                    <option value="">Selecione a cor</option>
+
+                                    {coresCabelo.map((cor, i) => (
+                                        <option key={`${valorCor(cor)}-${i}`} value={valorCor(cor)}>
+                                            {nomeCor(cor)}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                        )}
+
+                        <button
+                            type="button"
+                            className={styles.servicoOpcao}
+                            style={{ width: "fit-content" }}
+                            onClick={voltarParaServicos}
+                        >
+                            ‹ Alterar serviços
+                        </button>
+                    </section>
+
+
+                    {/* DIAS */}
+                    <section className={styles.seletorDias}>
+
+                        <button
+                            className={styles.navegacaoDia}
+                            onClick={voltarDia}
+                            disabled={diaSelecionado === 0}
+                            aria-label="Dia anterior"
+                        >
+                            ‹
+                        </button>
+
+
+                        <div className={styles.diasContainer}>
+
+                            {diasVisiveis.map((dia, i) => {
+                                const index = inicioJanela + i;
+
+                                return (
+                                    <button
+                                        key={dia.iso}
+                                        className={cx(
+                                            styles.diaCard,
+                                            diaSelecionado === index && styles.diaAtivo
+                                        )}
+                                        onClick={() => selecionarDia(index)}
+                                    >
                                 <span className={styles.diaSemana}>
                                     {dia.semana}
                                 </span>
 
-                                <strong className={styles.diaNumero}>
-                                    {dia.numero}
-                                </strong>
+                                        <strong className={styles.diaNumero}>
+                                            {dia.numero}
+                                        </strong>
 
-                                <span className={styles.diaMes}>
+                                        <span className={styles.diaMes}>
                                     {dia.mes}
                                 </span>
-                            </button>
-                        );
-                    })}
+                                    </button>
+                                );
+                            })}
 
-                </div>
-
-
-                <button
-                    className={styles.navegacaoDia}
-                    onClick={avancarDia}
-                    disabled={diaSelecionado === dias.length - 1}
-                    aria-label="Próximo dia"
-                >
-                    ›
-                </button>
-
-            </section>
+                        </div>
 
 
-            {/* HORÁRIOS */}
-            <section className={styles.horariosSection}>
+                        <button
+                            className={styles.navegacaoDia}
+                            onClick={avancarDia}
+                            disabled={diaSelecionado === dias.length - 1}
+                            aria-label="Próximo dia"
+                        >
+                            ›
+                        </button>
 
-                <h2>
-                    Horários Disponíveis para{" "}
-                    <strong>
-                        {diaAtual.semanaLonga}, {diaAtual.numero} {diaAtual.mes}
-                    </strong>
-                </h2>
-
-                {!carregando && detalhes && (
-                    <p className={styles.resumoAgendamento}>
-                        {detalhes.duracao ? `${detalhes.duracao} min` : null}
-                        {detalhes.duracao && valorFormatado ? " · " : null}
-                        {valorFormatado}
-                    </p>
-                )}
+                    </section>
 
 
-                {carregando ? (
-                    <p className={styles.estadoHorarios}>
-                        Carregando horários...
-                    </p>
-                ) : horarios.length === 0 ? (
-                    <p className={styles.estadoHorarios}>
-                        Nenhum horário neste dia. Escolha outra data.
-                    </p>
-                ) : (
-                    <div className={styles.horariosGrid}>
+                    {/* HORÁRIOS */}
+                    <section className={styles.horariosSection}>
 
-                        {horarios.map((item) => {
+                        <h2>
+                            Horários Disponíveis para{" "}
+                            <strong>
+                                {diaAtual.semanaLonga}, {diaAtual.numero} {diaAtual.mes}
+                            </strong>
+                        </h2>
 
-                            const ocupado = !item.disponivel;
+                        {!carregando && detalhes && (
+                            <p className={styles.resumoAgendamento}>
+                                {detalhes.duracao ? `${detalhes.duracao} min` : null}
+                                {detalhes.duracao && valorFormatado ? " · " : null}
+                                {valorFormatado}
+                            </p>
+                        )}
 
-                            const selecionado =
-                                horarioSelecionado === item.horario;
 
-                            return (
-                                <button
-                                    key={item.horario}
-                                    disabled={ocupado}
-                                    onClick={() => selecionarHorario(item)}
-                                    className={cx(
-                                        styles.horarioCard,
-                                        ocupado && styles.horarioOcupado,
-                                        selecionado && styles.horarioSelecionado
-                                    )}
-                                >
+                        {!parametrosValidos ? (
+                            <p className={styles.estadoHorarios}>
+                                Selecione ao menos um serviço para ver os horários.
+                            </p>
+                        ) : carregando ? (
+                            <p className={styles.estadoHorarios}>
+                                Carregando horários...
+                            </p>
+                        ) : horarios.length === 0 ? (
+                            <p className={styles.estadoHorarios}>
+                                Nenhum horário neste dia. Escolha outra data.
+                            </p>
+                        ) : (
+                            <div className={styles.horariosGrid}>
+
+                                {horarios.map((item) => {
+
+                                    const ocupado = !item.disponivel;
+
+                                    const selecionado =
+                                        horarioSelecionado === item.horario;
+
+                                    return (
+                                        <button
+                                            key={item.horario}
+                                            disabled={ocupado}
+                                            onClick={() => selecionarHorario(item)}
+                                            className={cx(
+                                                styles.horarioCard,
+                                                ocupado && styles.horarioOcupado,
+                                                selecionado && styles.horarioSelecionado
+                                            )}
+                                        >
 
                                     <span className={styles.horarioTexto}>
                                         {item.horario}
                                     </span>
 
 
-                                    {ocupado ? (
-                                        <span
-                                            className={cx(
-                                                styles.horarioStatus,
-                                                styles.ocupado
-                                            )}
-                                        >
+                                            {ocupado ? (
+                                                <span
+                                                    className={cx(
+                                                        styles.horarioStatus,
+                                                        styles.ocupado
+                                                    )}
+                                                >
                                             <span className={styles.xOcupado}>
                                                 ×
                                             </span>
 
                                             Ocupado
                                         </span>
-                                    ) : (
-                                        <span className={styles.horarioStatus}>
+                                            ) : (
+                                                <span className={styles.horarioStatus}>
                                             Disponível
                                         </span>
-                                    )}
+                                            )}
 
 
-                                    {selecionado && (
-                                        <span className={styles.checkHorario}>
+                                            {selecionado && (
+                                                <span className={styles.checkHorario}>
                                             ✓
                                         </span>
-                                    )}
+                                            )}
 
-                                </button>
-                            );
-                        })}
+                                        </button>
+                                    );
+                                })}
 
-                    </div>
-                )}
+                            </div>
+                        )}
 
 
-                {/* CONFIRMAR */}
-                <button
-                    className={styles.btnConfirmar}
-                    onClick={confirmarAgendamento}
-                    disabled={enviando || carregando}
-                >
-                    {enviando ? "AGENDANDO..." : "CONFIRMAR SELEÇÃO"}
-                </button>
+                        {/* CONFIRMAR */}
+                        <button
+                            className={styles.btnConfirmar}
+                            onClick={confirmarAgendamento}
+                            disabled={enviando || carregando || !parametrosValidos}
+                        >
+                            {enviando ? "AGENDANDO..." : "CONFIRMAR SELEÇÃO"}
+                        </button>
 
-            </section>
+                    </section>
+
+                </>
+            )}
 
 
             {/* MENSAGEM FLASH */}
