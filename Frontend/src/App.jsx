@@ -19,6 +19,7 @@ import AdminUsuarios from "./pages/AdminUsuarios/AdminUsuarios.jsx";
 import Visagismo from "./pages/Visagismo/Visagismo.jsx";
 import Agendamento from "./pages/Agendamento/Agendamento.jsx";
 import AdminFinaceiro from "./pages/AdminFinaceiro/AdminFinanceiro.jsx";
+import Pagamento from "./pages/Pagamento/Pagamento.jsx";
 
 export default function App() {
     return (
@@ -93,6 +94,11 @@ export default function App() {
 
                 <Route path="/admin/usuarios" element={<AdminUsuarios />} />
                 <Route path="/editarusuario/:id" element={<EditarUsuario1 />} />
+
+                <Route
+                    path="/pagamento/:idAgendamento"
+                    element={<Pagamento />}
+                />
 
 
             </Routes>

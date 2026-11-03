@@ -695,6 +695,7 @@ function Agendamento({ aoAgendar }) {
                     ...base,
                     data: dataISO,
                     horario: horarioSelecionado,
+                    pagar_na_hora: false, // a escolha acontece na página de pagamento
                     [CHAVE_RESUMO]: resumo.dados?.resumo?.confirmacao_resumo,
                 },
             });
@@ -717,25 +718,26 @@ function Agendamento({ aoAgendar }) {
                 return;
             }
 
-            const retorno = paraMensagem(
-                criado.dados,
-                true,
-                "Agendamento realizado!"
+            // O backend cria primeiro uma SOLICITAÇÃO, não confirma pagamento.
+            // A navegação envia apenas o ID: a página busca o estado real no backend.
+            const agendamentoCriado = criado.dados?.agendamento;
+            const idAgendamento = Number(
+                agendamentoCriado?.id_agendamento ??
+                criado.dados?.id_agendamento ??
+                agendamentoCriado?.id
             );
 
-            mostrarMensagem(
-                {
-                    ...retorno,
-                    informacao:
-                        `${retorno.informacao} ` +
-                        `${diaAtual.semanaLonga}, ${diaAtual.numero} ${diaAtual.mes} ` +
-                        `às ${horarioSelecionado}.`,
-                },
-                () => {
-                    recarregarHorarios();
-                    aoAgendar?.(criado.dados?.agendamento);
-                }
-            );
+            if (!Number.isSafeInteger(idAgendamento) || idAgendamento <= 0) {
+                mostrarMensagem({
+                    tipo: "erro",
+                    informacao: "A solicitação foi criada, mas o servidor não retornou seu identificador. " +
+                        "Consulte seus agendamentos antes de fazer outra solicitação.",
+                });
+                return;
+            }
+
+            aoAgendar?.(agendamentoCriado);
+            navigate(`/pagamento/${idAgendamento}`, { replace: true });
         } catch {
             mostrarMensagem({ tipo: "erro", informacao: ERRO_REDE });
         } finally {

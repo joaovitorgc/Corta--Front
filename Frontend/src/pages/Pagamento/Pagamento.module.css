@@ -1,0 +1,492 @@
+/*
+ * CORTAÊ — PAGAMENTO | Layout da página  (v3)
+ * Usa as variáveis globais do site (:root) e deriva os tokens --pg-* a partir delas.
+ * Somente CSS: mantém todos os componentes, estados e classes existentes.
+ */
+
+.pagina {
+    /* ---- Marca (vêm das variáveis globais do site) ---- */
+    --pg-laranja: var(--cor-destaque, #FF9C08);
+    --pg-laranja-vivo: color-mix(in srgb, var(--pg-laranja) 86%, #fff);
+    --pg-laranja-escuro: color-mix(in srgb, var(--pg-laranja) 50%, #000);
+    --pg-laranja-claro: color-mix(in srgb, var(--pg-laranja) 11%, #fff);
+    --pg-laranja-suave: color-mix(in srgb, var(--pg-laranja) 28%, #fff);
+    --pg-preto: var(--cor-texto, #000);
+    --pg-branco: var(--cor-texto-2, #fff);
+    --pg-fundo: var(--cor-fundo, #fff);
+    --pg-card: var(--cor-card, #F5F5F5);
+    --pg-card-claro: var(--cor-card-3, #fff);
+
+    /* ---- Texto e bordas (neutros, como o resto do site) ---- */
+    --pg-texto: color-mix(in srgb, var(--pg-preto) 92%, #fff);
+    --pg-texto-suave: color-mix(in srgb, var(--pg-preto) 58%, #fff);
+    --pg-borda: color-mix(in srgb, var(--pg-preto) 9%, #fff);
+    --pg-borda-forte: color-mix(in srgb, var(--pg-preto) 17%, #fff);
+
+    /* ---- Elevação ---- */
+    --pg-sombra: 0 1px 2px rgba(0, 0, 0, .04), 0 18px 46px rgba(0, 0, 0, .07);
+    --pg-sombra-forte: 0 2px 4px rgba(0, 0, 0, .05), 0 26px 60px rgba(0, 0, 0, .12);
+
+    /* ---- Movimento ---- */
+    --pg-ease: cubic-bezier(.2, .8, .2, 1);
+
+    position: relative;
+    isolation: isolate;
+    min-height: 100vh;
+    overflow-x: clip;
+    padding: clamp(30px, 5.6vw, 76px) 24px 100px;
+    color: var(--pg-texto);
+    font-family: inherit;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    background:
+            radial-gradient(ellipse 560px 390px at 98% 7%, color-mix(in srgb, var(--pg-laranja) 13%, transparent), transparent 74%),
+            radial-gradient(ellipse 400px 360px at -6% 31%, rgba(0, 0, 0, .04), transparent 78%),
+            linear-gradient(180deg, var(--pg-fundo) 0%, var(--pg-fundo) 45%, var(--pg-card) 100%);
+}
+
+@supports (min-height: 100dvh) {
+    .pagina { min-height: 100dvh; }
+}
+
+.pagina *,
+.pagina *::before,
+.pagina *::after {
+    box-sizing: border-box;
+}
+
+.pagina ::selection {
+    background: var(--pg-laranja);
+    color: var(--pg-preto);
+}
+
+/* Textura de pontos sutil no topo. */
+.pagina::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0 0 auto;
+    height: 520px;
+    background-image: radial-gradient(rgba(0, 0, 0, .12) 1px, transparent 1.4px);
+    background-size: 22px 22px;
+    -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, .55), transparent 85%);
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, .55), transparent 85%);
+    pointer-events: none;
+}
+
+/* Faixa de marca: preto, branco e laranja. A cor desliza ao carregar. */
+.pagina::before {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    inset: 0 0 auto;
+    height: 5px;
+    background: linear-gradient(90deg, var(--pg-preto) 0 34%, var(--pg-fundo) 34% 40%, var(--pg-laranja) 40% 100%);
+    box-shadow: 0 2px 13px rgba(0, 0, 0, .07);
+    transform-origin: left center;
+    animation: pgFaixa .9s var(--pg-ease) both;
+}
+
+.container {
+    width: min(100%, 1160px);
+    margin-inline: auto;
+}
+
+/* ---------- Trilha (breadcrumb) ---------- */
+.trilha {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    column-gap: 0;
+    row-gap: 7px;
+    width: fit-content;
+    max-width: 100%;
+    min-height: 34px;
+    margin-bottom: clamp(24px, 4vw, 40px);
+    padding: 8px 15px;
+    border: 1px solid var(--pg-borda);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--pg-fundo) 82%, transparent);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    color: var(--pg-texto-suave);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .115em;
+    line-height: 1.35;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .04);
+    animation: pgDeslizarEsq .6s .05s var(--pg-ease) backwards;
+}
+
+.trilha span {
+    margin-inline: 11px;
+    color: var(--pg-laranja);
+    font-weight: 900;
+}
+
+/* ---------- Cabeçalho ---------- */
+.cabecalho {
+    position: relative;
+    max-width: 760px;
+    margin-bottom: clamp(28px, 4vw, 43px);
+    padding-left: clamp(16px, 2.5vw, 24px);
+    border-left: 4px solid var(--pg-laranja);
+    animation: pgRevelar .8s .12s var(--pg-ease) backwards;
+}
+
+.cabecalho::after {
+    content: "";
+    position: absolute;
+    bottom: -11px;
+    left: -4px;
+    width: 4px;
+    height: 26px;
+    border-radius: 0 0 3px 3px;
+    background: var(--pg-preto);
+}
+
+.cabecalho h1 {
+    margin: 13px 0 14px;
+    color: var(--pg-preto);
+    font-size: clamp(32px, 4.7vw, 58px);
+    font-weight: 900;
+    letter-spacing: -.052em;
+    line-height: 1.04;
+    text-wrap: balance;
+    animation: pgSubir .75s .26s var(--pg-ease) backwards;
+}
+
+.cabecalho p {
+    max-width: 62ch;
+    margin: 0;
+    color: var(--pg-texto-suave);
+    font-size: clamp(14px, 1.6vw, 16.5px);
+    line-height: 1.8;
+    text-wrap: pretty;
+    animation: pgSubir .75s .4s var(--pg-ease) backwards;
+}
+
+/* ---------- Grade principal ---------- */
+.grade {
+    display: grid;
+    grid-template-columns: minmax(0, 1.58fr) minmax(300px, .95fr);
+    align-items: start;
+    gap: clamp(17px, 2.5vw, 30px);
+}
+
+.grade > * {
+    min-width: 0;
+}
+
+.grade > :first-child { animation: pgSubir .75s .35s var(--pg-ease) backwards; }
+.grade > :last-child  { animation: pgDeslizarDir .8s .5s var(--pg-ease) backwards; }
+
+/* O resumo acompanha a leitura no desktop. */
+@media (min-width: 851px) {
+    .grade > :last-child {
+        position: sticky;
+        top: 25px;
+    }
+}
+
+/* ---------- Pedido finalizado ---------- */
+.finalizado {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(26px, 4.2vw, 46px);
+    border: 1px solid var(--pg-borda);
+    border-radius: 24px;
+    background:
+            radial-gradient(circle at 99% 0%, color-mix(in srgb, var(--pg-laranja) 12%, transparent), transparent 56%),
+            radial-gradient(circle at 0% 100%, rgba(0, 0, 0, .035), transparent 50%),
+            var(--pg-card-claro);
+    box-shadow: var(--pg-sombra-forte);
+    animation: pgSubir .6s var(--pg-ease) backwards;
+}
+
+.finalizado::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 5px;
+    background: linear-gradient(90deg, var(--pg-preto) 0 32%, var(--pg-laranja) 32% 100%);
+    transform-origin: left center;
+    animation: pgFaixa .9s .2s var(--pg-ease) backwards;
+}
+
+.seloConfirmacao {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    border: 1px solid color-mix(in srgb, var(--cor-texto-positivo, #15803D) 28%, #fff);
+    border-radius: 22px;
+    background: var(--cor-botao-positivo, #DCFCE7);
+    color: var(--cor-texto-positivo, #15803D);
+    font-size: 32px;
+    font-weight: 850;
+    box-shadow:
+            0 1px 0 #fff inset,
+            0 14px 28px color-mix(in srgb, var(--cor-texto-positivo, #15803D) 20%, transparent);
+    animation: pgSelo .75s cubic-bezier(.2, 1.4, .35, 1) .2s backwards;
+}
+
+/* Anel que se expande duas vezes, celebrando a confirmação. */
+.seloConfirmacao::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border: 2px solid var(--cor-texto-positivo, #15803D);
+    border-radius: inherit;
+    opacity: 0;
+    animation: pgAnel 1.3s ease-out .7s 2 both;
+    pointer-events: none;
+}
+
+.finalizado h2 {
+    margin: 26px 0 12px;
+    color: var(--pg-preto);
+    font-size: clamp(22px, 2.8vw, 31px);
+    font-weight: 900;
+    letter-spacing: -.035em;
+    line-height: 1.2;
+    text-wrap: balance;
+    animation: pgSubir .6s .38s var(--pg-ease) backwards;
+}
+
+.finalizado p {
+    max-width: 60ch;
+    margin: 0;
+    color: var(--pg-texto-suave);
+    font-size: 15px;
+    line-height: 1.85;
+    animation: pgSubir .6s .5s var(--pg-ease) backwards;
+}
+
+.finalizado p + p { margin-top: 10px; animation-delay: .62s; }
+
+.finalizado p strong {
+    color: var(--pg-preto);
+    font-weight: 800;
+    background: linear-gradient(var(--pg-laranja-suave), var(--pg-laranja-suave)) 0 90% / 100% 38% no-repeat;
+    animation: pgMarca .7s .9s var(--pg-ease) backwards;
+}
+
+/* ---------- Avisos ---------- */
+.alerta,
+.info {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 22px;
+    padding: 16px 18px 16px 24px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 550;
+    line-height: 1.65;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .055);
+    animation: pgAviso .5s var(--pg-ease) backwards;
+}
+
+.alerta::before,
+.info::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 5px;
+}
+
+.alerta {
+    border: 1px solid color-mix(in srgb, var(--cor-texto-negativo, #B91C1C) 24%, #fff);
+    background: var(--cor-botao-negativo, #FEE2E2);
+    color: var(--cor-texto-negativo, #B91C1C);
+    animation: pgAviso .5s var(--pg-ease) backwards, pgTremer .5s .5s ease-in-out;
+}
+
+.alerta::before { background: var(--cor-texto-negativo, #B91C1C); }
+
+.info {
+    border: 1px solid var(--pg-borda);
+    background: var(--pg-card);
+    color: var(--pg-texto);
+}
+
+.info::before { background: var(--pg-laranja); }
+
+/* ---------- Carregamento ---------- */
+.carregamento {
+    position: relative;
+    overflow: hidden;
+    padding: 52px 28px 48px;
+    border: 1px solid var(--pg-borda);
+    border-radius: 22px;
+    background: var(--pg-card-claro);
+    color: var(--pg-texto-suave);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    box-shadow: var(--pg-sombra);
+    animation: pgSubir .55s var(--pg-ease) backwards, pgRespirar 2.2s 1s ease-in-out infinite;
+}
+
+.carregamento::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, var(--pg-laranja), var(--pg-preto), transparent);
+    background-size: 45% 100%;
+    background-repeat: no-repeat;
+    animation: pgBarra 1.35s ease-in-out infinite;
+}
+
+.carregamento::before {
+    content: "";
+    display: block;
+    width: 38px;
+    height: 38px;
+    margin: 0 auto 18px;
+    border: 3px solid var(--pg-laranja-suave);
+    border-top-color: var(--pg-preto);
+    border-right-color: var(--pg-laranja);
+    border-radius: 50%;
+    animation: pgGirar .85s linear infinite;
+}
+
+/* ---------- Animações ---------- */
+@keyframes pgSubir {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pgDeslizarEsq {
+    from { opacity: 0; transform: translateX(-22px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pgDeslizarDir {
+    from { opacity: 0; transform: translateX(34px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pgRevelar {
+    from { opacity: 0; clip-path: inset(0 0 100% 0); }
+    to   { opacity: 1; clip-path: inset(-20px -20px -20px -20px); }
+}
+
+@keyframes pgFaixa {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+}
+
+@keyframes pgAviso {
+    from { opacity: 0; transform: translateY(-10px) scale(.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pgTremer {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(2px); }
+}
+
+@keyframes pgSelo {
+    0%   { opacity: 0; transform: scale(.5) rotate(-14deg); }
+    60%  { opacity: 1; transform: scale(1.12) rotate(3deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+@keyframes pgAnel {
+    0%   { opacity: .8; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.7); }
+}
+
+@keyframes pgMarca {
+    from { background-size: 0% 38%; }
+    to   { background-size: 100% 38%; }
+}
+
+@keyframes pgBarra {
+    from { background-position: -60% 0; }
+    to   { background-position: 160% 0; }
+}
+
+@keyframes pgRespirar {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-3px); }
+}
+
+@keyframes pgGirar {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pgFade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 850px) {
+    .pagina { padding: 34px 18px 76px; }
+    .trilha { margin-bottom: 29px; }
+    .grade { grid-template-columns: minmax(0, 1fr); }
+    .grade > :last-child { position: static; animation: pgSubir .75s .35s var(--pg-ease) backwards; }
+    .grade > :first-child { animation-delay: .5s; }
+}
+
+@media (max-width: 520px) {
+    .pagina { padding: 25px 14px 60px; }
+    .trilha { padding: 8px 11px; font-size: 9px; letter-spacing: .07em; }
+    .trilha span { margin-inline: 7px; }
+    .cabecalho { padding-left: 14px; border-left-width: 3px; }
+    .cabecalho::after { left: -3px; width: 3px; }
+    .cabecalho h1 { margin-top: 11px; font-size: clamp(29px, 8.3vw, 39px); }
+    .cabecalho p { line-height: 1.7; }
+    .finalizado { padding: 26px 21px; border-radius: 18px; }
+    .finalizado h2 { margin-top: 20px; }
+    .seloConfirmacao { width: 62px; height: 62px; border-radius: 18px; font-size: 28px; }
+    .alerta, .info { padding: 13px 14px 13px 19px; }
+}
+
+@media print {
+    .pagina { background: #fff; padding: 0; }
+    .pagina::before, .pagina::after { display: none; }
+    .grade > :last-child { position: static; }
+    .finalizado, .carregamento { box-shadow: none; }
+}
+
+/*
+ * Movimento reduzido (configuração do sistema operacional):
+ * em vez de desligar tudo, trocamos deslocamentos por um fade suave.
+ * Assim a página continua "viva", sem movimento que incomode.
+ */
+@media (prefers-reduced-motion: reduce) {
+    .pagina::before,
+    .trilha,
+    .cabecalho,
+    .cabecalho h1,
+    .cabecalho p,
+    .grade > :first-child,
+    .grade > :last-child,
+    .finalizado,
+    .finalizado::before,
+    .seloConfirmacao,
+    .finalizado h2,
+    .finalizado p,
+    .finalizado p strong,
+    .alerta,
+    .info,
+    .carregamento {
+        animation-name: pgFade !important;
+        animation-duration: .45s !important;
+        animation-delay: 0s !important;
+        animation-iteration-count: 1 !important;
+        animation-fill-mode: backwards !important;
+    }
+
+    .seloConfirmacao::after,
+    .carregamento::after { animation: none !important; }
+}
