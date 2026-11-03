@@ -233,13 +233,9 @@ function EtapaImagem({ imagem, setImagem, setArquivo, avancarEtapa, carregando =
                 {pularEtapa && (
                     <button
                         type="button"
+                        className={styles.botaoPularVisagismo}
                         onClick={pularEtapa}
                         disabled={carregando}
-                        style={{
-                            display: 'block', margin: '12px auto 0', background: 'none',
-                            border: 'none', textDecoration: 'underline', cursor: 'pointer',
-                            color: 'inherit', font: 'inherit'
-                        }}
                     >
                         Pular visagismo e escolher horário
                     </button>
