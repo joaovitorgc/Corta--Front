@@ -50,26 +50,47 @@ function EtapaImagem({ imagem, setImagem, setArquivo, avancarEtapa, carregando =
 
     const tirarFoto = () => {
         const video = videoRef.current;
+
         if (!video || !video.videoWidth) return;
+
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
+
+        const contexto = canvas.getContext('2d');
+
+        if (!contexto) {
+            setErroArquivo('Não foi possível capturar a foto.');
+            return;
+        }
+
+        contexto.filter = 'none';
+
+        contexto.drawImage(
+            video,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
         canvas.toBlob((blob) => {
             if (!blob) {
-                setErroArquivo('Não foi possível capturar a foto. Tente novamente.');
+                setErroArquivo('Não foi possível capturar a foto.');
                 return;
             }
-            selecionarImagem(new File([blob], 'foto-camera.jpg', { type: 'image/jpeg' }));
-            fecharCamera();
-        }, 'image/jpeg', 0.92);
-    };
 
-    useEffect(() => {
-        return () => {
-            if (imagem?.startsWith('blob:')) URL.revokeObjectURL(imagem);
-        };
-    }, [imagem]);
+            selecionarImagem(
+                new File(
+                    [blob],
+                    'foto-camera.jpg',
+                    { type: 'image/jpeg' }
+                )
+            );
+
+            fecharCamera();
+        }, 'image/jpeg', 0.95);
+    };
 
     const selecionarImagem = (arquivo) => {
         if (!arquivo) return;
@@ -182,9 +203,10 @@ function EtapaImagem({ imagem, setImagem, setArquivo, avancarEtapa, carregando =
                     >
                         <video
                             ref={videoRef}
+                            autoPlay
                             playsInline
                             muted
-                            style={{ maxWidth: '100%', maxHeight: '70vh', borderRadius: '12px', transform: 'scaleX(-1)' }}
+                            className={styles.cameraVideo}
                         />
                         <div style={{ display: 'flex', gap: '12px' }}>
                             <button type="button" className={styles.botaoAnalise} onClick={tirarFoto}>Capturar</button>
